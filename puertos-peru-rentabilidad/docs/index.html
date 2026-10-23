@@ -1,0 +1,1418 @@
+<meta charset="utf-8">
+<title>Información financiera y operativa portuaria</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+/* Layout: panel de carta náutica — índice de terminales a la izquierda, sondeos (datos) a la derecha */
+:root{
+  --paper:#e9ebee; --plane:#dcdfe3; --card:#ffffff; --ink:#1a2d42; --ink-2:#2e4156; --ink-3:#73828f;
+  --rule:#c2cace; --rule-2:#dbe0e4; --chip:#e3e7ea;
+  --t1:#2b6ca8; --t2:#c98500; --t3:#00949b; --t4:#d2563c; --t5:#6250d6; --t6:#1f7a1f; --t7:#c9427e;
+  --sonda:#2b6ca8; --magenta:#c9427e; --ocre:#c98500;
+  --good:#1f7a1f; --warn:#c98500; --crit:#c0392b;
+  --f-disp:Archivo,"Helvetica Neue",Arial,sans-serif;
+  --f-ui:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;
+  --f-num:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+
+
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-ui);font-size:15px;line-height:1.5;margin:0}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:40;background:var(--paper)}
+.wrap{max-width:1280px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0}
+h1,h2,h3{font-family:var(--f-disp);text-wrap:balance;margin:0;letter-spacing:-.015em}
+.num{font-family:var(--f-num);font-variant-numeric:tabular-nums}
+.eyebrow{font-family:var(--f-num);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)}
+
+/* cabecera */
+header{background:#1a2d42;color:#fff;border-bottom:0}
+header .hd h1{color:#fff}
+header .hd .eyebrow{color:#a9bbcc}
+header .hd p{color:#ced8e2}
+header .hd p.autor{font-family:var(--f-num);font-size:11.5px;letter-spacing:.02em;
+  color:#a9bbcc;margin-top:12px}
+header .stamp{color:#a9bbcc;border-left-color:#5c7a99}
+header .stamp b{color:#fff}
+body::before{background:#1a2d42}
+.hd{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-end;justify-content:space-between;padding-block:26px 18px}
+.hd h1{font-size:clamp(26px,4.4vw,40px);font-weight:800;line-height:1.05}
+.hd p{margin:7px 0 0;color:var(--ink-2);max-width:62ch;font-size:14px}
+.stamp{font-family:var(--f-num);font-size:11px;line-height:1.5;color:var(--ink-3);text-align:right;border-left:2px solid #5c7a99;padding-left:11px}
+.stamp b{color:var(--ink);font-weight:600;display:block;font-size:12px}
+
+/* navegación por secciones */
+nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:var(--paper);border-bottom:1px solid var(--rule)}
+.navrow{display:flex;gap:2px;overflow-x:auto;padding-block:0;scrollbar-width:thin}
+.navrow button{flex:0 0 auto;background:none;border:0;border-bottom:3px solid transparent;color:var(--ink-3);
+  font-family:var(--f-ui);font-size:13px;font-weight:500;padding:13px 15px;cursor:pointer;white-space:nowrap}
+.navrow button:hover{color:var(--ink);background:var(--chip)}
+.navrow button[aria-selected="true"]{color:var(--ink);background:var(--card);
+  border-bottom-color:var(--ink);font-weight:600}
+.navrow button:focus-visible{outline:2px solid var(--sonda);outline-offset:-2px}
+
+section{padding-block:30px 10px}
+h3.bloque{font-family:var(--f-disp);font-size:18px;font-weight:700;letter-spacing:-.015em;
+  margin:34px 0 2px;padding-top:20px;border-top:2px solid var(--ink)}
+h3.bloque:first-of-type{margin-top:22px}
+.shead{display:flex;flex-wrap:wrap;gap:10px;align-items:baseline;justify-content:space-between;margin-bottom:4px}
+.anios{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.anios button{background:var(--card);border:1px solid var(--rule);color:var(--ink-2);cursor:pointer;
+  font-family:var(--f-num);font-size:11.5px;padding:5px 9px;border-radius:2px;line-height:1}
+.anios button:hover{color:var(--ink);border-color:var(--ink-3)}
+.anios button[aria-pressed="true"]{background:var(--ink-2);border-color:var(--ink-2);color:var(--paper);font-weight:600}
+.anios button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.shead h2{font-size:21px;font-weight:700}
+.sub{color:var(--ink-2);font-size:13.5px;margin:3px 0 18px;max-width:78ch}
+
+/* fichas de cifra */
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--rule-2);
+  border:1px solid var(--rule-2);margin-bottom:22px}
+.tile{background:var(--card);padding:14px 15px 15px;min-width:0}
+.tile .k{font-family:var(--f-num);font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3);display:block;margin-bottom:7px}
+.tile .v{font-family:var(--f-disp);font-size:23px;font-weight:700;line-height:1.05;letter-spacing:-.02em;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile .u{font-size:12px;color:var(--ink-2);margin-top:5px}
+
+/* tarjetas y gráficos */
+.card{background:var(--card);border:1px solid var(--rule-2);padding:16px 17px 14px;min-width:0}
+.card h3{font-size:14.5px;font-weight:600;margin-bottom:2px}
+.card .note{font-size:12px;color:var(--ink-3);margin:0 0 12px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:14px;margin-bottom:16px}
+.chartbox{position:relative;height:290px;min-width:0}
+.chartbox.tall{height:380px}
+
+/* tablas */
+.tscroll{overflow-x:auto;border:1px solid var(--rule-2);background:var(--card)}
+table{border-collapse:collapse;width:100%;font-size:13px;min-width:620px}
+th,td{padding:8px 11px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--rule-2)}
+th:first-child,td:first-child{text-align:left;position:sticky;left:0;background:var(--card);z-index:1}
+thead th{font-family:var(--f-num);font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3);
+  font-weight:500;border-bottom:1px solid var(--rule);background:var(--card)}
+tbody td{font-family:var(--f-num);font-variant-numeric:tabular-nums}
+tbody td:first-child{font-family:var(--f-ui)}
+tr.tot td{font-weight:600;border-top:1px solid var(--rule);background:var(--chip)}
+tr.tot td:first-child{background:var(--chip)}
+tr.sub2 td:first-child{padding-left:24px;color:var(--ink-2);font-size:12.5px}
+tr.sec td{background:var(--chip);font-family:var(--f-num);font-size:10.5px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--ink-3);padding-block:6px}
+.neg{color:var(--crit)}
+.srt{cursor:pointer;user-select:none}
+.srt:hover{color:var(--ink)}
+.srt[aria-sort]{color:var(--ink)}
+
+/* selector de terminal */
+.picker{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:18px}
+.picker button{background:var(--card);border:1px solid var(--rule);color:var(--ink-2);font-family:var(--f-ui);
+  font-size:12.5px;font-weight:500;padding:7px 12px;cursor:pointer}
+.picker button:hover{border-color:var(--ink-3);color:var(--ink)}
+.picker button[aria-pressed="true"]{background:var(--ink-2);border-color:var(--ink-2);color:var(--paper)}
+.picker button:focus-visible{outline:2px solid var(--sonda);outline-offset:2px}
+
+/* ficha de identidad */
+.ident{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:1px;background:var(--rule-2);
+  border:1px solid var(--rule-2);margin-bottom:16px}
+.ident div{background:var(--card);padding:11px 14px;min-width:0}
+.ident dt{font-family:var(--f-num);font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3)}
+.ident dd{margin:4px 0 0;font-size:13.5px;font-weight:500}
+
+/* barra de avance capex */
+.bar{height:7px;background:var(--chip);margin-top:7px;position:relative;overflow:hidden}
+.bar i{position:absolute;inset:0 auto 0 0;background:var(--sonda)}
+
+/* paneles de diagnóstico */
+.find{display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:14px}
+.fcard{background:var(--card);border:1px solid var(--rule-2);border-left:3px solid var(--rule);padding:15px 17px}
+.fcard.ok{border-left-color:var(--good)}.fcard.wn{border-left-color:var(--warn)}.fcard.cr{border-left-color:var(--crit)}
+.fcard.nt{border-left-color:var(--sonda)}
+.fcard h3{font-size:14.5px;font-weight:700;margin-bottom:7px;display:flex;gap:8px;align-items:baseline}
+.fcard .tag{font-family:var(--f-num);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;
+  padding:2px 6px;background:var(--chip);color:var(--ink-2);font-weight:500;flex:0 0 auto}
+.fcard p{margin:0 0 9px;font-size:13.5px;color:var(--ink-2)}
+.fcard p:last-child{margin-bottom:0}
+.fcard b{color:var(--ink);font-weight:600}
+.fcard .num{font-family:var(--f-num);font-weight:500;color:var(--ink)}
+
+footer{border-top:1px solid var(--rule);margin-top:34px;padding-block:20px 34px;color:var(--ink-3);font-size:12.5px;
+  columns:2;column-gap:40px;column-rule:1px solid var(--rule-2)}
+footer a{color:var(--sonda)}
+footer p{margin:0 0 11px;break-inside:avoid}
+@media (max-width:880px){footer{columns:1}}
+.legend{display:flex;flex-wrap:wrap;gap:14px;margin:0 0 11px;font-size:12px;color:var(--ink-2)}
+.legend span{display:flex;align-items:center;gap:6px}
+.legend i{width:11px;height:11px;border-radius:2px;flex:0 0 auto}
+@media (max-width:560px){.hd{flex-direction:column;align-items:flex-start}.stamp{text-align:left}
+  .tile .v{font-size:23px}.chartbox{height:260px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<header><div class="wrap"><div class="hd">
+  <div>
+    <span class="eyebrow">Sistema portuario concesionado del Perú · Informes de Desempeño 2025</span>
+    <h1>Información financiera y operativa portuaria</h1>
+    <p>Rentabilidad financiera y desempeño operativo de los siete terminales portuarios concesionados bajo
+       supervisión del Ositrán, en lectura dual de Dirección Financiera y Dirección General.</p>
+    <p class="autor">Elaborado por Fabio Edú García Rojas</p>
+  </div>
+  <div class="stamp"><b>Fuente primaria</b>Informes de Desempeño 2025<br>Ositrán — Gerencia de Regulación<br>
+    y Estudios Económicos<br><br><b>Base contable</b>EEFF auditados 2021–2025<br>Miles de USD</div>
+</div></div></header>
+
+<nav><div class="wrap"><div class="navrow" role="tablist" id="nav"></div></div></nav>
+
+<div class="wrap"><main id="main"></main>
+
+<footer>
+  <p><b>Fuente.</b> Informes de Desempeño 2025 del Ositrán para cada concesión portuaria (APM Terminals Callao,
+  DP World Callao, Transportadora Callao, Terminal Portuario Paracas, TISUR Matarani, Salaverry Terminal
+  Internacional y Terminales Portuarios Euroandinos Paita). Los estados financieros reproducidos por el regulador
+  provienen de los EEFF auditados de cada concesionario; el tráfico procede de la Declaración Estadística del Ositrán.</p>
+  <p><b>Criterios.</b> Todas las cifras financieras están en miles de dólares, tal como las publica el regulador.
+  El EBITDA es utilidad operativa más depreciación y amortización: para DP World se usa la D&amp;A desagregada del informe
+  y para el resto se deriva del margen EBITDA publicado por el Ositrán, disponible para 2024–2025 (serie completa en
+  TISUR). Los ratios calculados aquí reproducen los publicados por el regulador con una desviación máxima de 0,40 puntos
+  porcentuales, atribuible a redondeo. Los ingresos por servicios de construcción (CINIIF 12) se muestran separados
+  porque no generan margen y distorsionan la comparación entre terminales.</p>
+  <p><b>Fuentes complementarias.</b> El contexto competitivo sobre el puerto de Chancay y los agregados de inversión del sistema
+  concesionado proceden de información pública de la Autoridad Portuaria Nacional y del propio Ositrán difundida en prensa
+  especializada. Chancay es una habilitación portuaria privada y no una concesión bajo el ámbito del Ositrán, por lo que no forma
+  parte de este tablero; las estadísticas de la APN abarcan once terminales de uso público y no son comparables uno a uno con las
+  siete concesiones analizadas aquí.</p>
+  <p><b>Advertencia de lectura.</b> El ROE no es comparable entre terminales: en las concesiones con reparto agresivo de
+  dividendos el patrimonio contable se ha erosionado, lo que infla el ratio sin que medie mejora operativa. Para juzgar
+  creación de valor se prioriza el ROA, el ROIC aproximado y el EBITDA por tonelada.</p>
+</footer></div>
+
+<script>
+const D={"orden":["APMT","DPW","TISUR","TPP","TPGSM","STI","TCSA"],"anios":[2021,2022,2023,2024,2025],"wacc":[0.08,0.1,0.12],"p":{"APMT":{"meta":{"nombre":"APM Terminals Callao","terminal":"Terminal Norte Multipropósito - Callao","operador":"APM Terminals Callao S.A.","tipo":"Multipropósito","inicio":2011,"plazo":30,"modalidad":"Autofinanciada","compromiso_inv":1425.98,"inv_acum":559.32,"inv_2025":78.24,"avance_inv":39.2,"segmento":"Multipropósito con contenedores","pct_contenedorizada":0.4782197934136082},"s":[{"anio":2021,"ingresos_totales":243808,"ingresos_servicios":240669,"ingresos_construccion":3139,"costos_totales":102469,"costo_servicios":99330,"utilidad_bruta":141339,"gastos_admin":40871,"gastos_venta":1953,"utilidad_operativa":97739,"ingresos_financieros":25,"gastos_financieros":6583,"uai":89561,"impuesto_renta":43042,"utilidad_neta":46519,"ebitda":null,"dep_amort":null,"efectivo":42082,"ctas_cobrar_com":4676,"inventarios":2343,"activo_corriente":59348,"activo_no_corriente":364138,"activo_total":423486,"intangibles":348975,"ppe":12138,"pasivo_corriente":108187,"pasivo_no_corriente":73527,"pasivo_total":181714,"deuda_financiera":79817,"patrimonio":241772,"margen_bruto":0.5797143654022837,"margen_operativo":0.400885122719517,"margen_neto":0.19080177844861532,"margen_ebitda":null,"roa":0.10984778717596332,"roe":0.19240855020432474,"roic_aprox":0.15786219686571037,"liquidez_corriente":0.5485686820043073,"prueba_acida":0.5269117361605369,"capital_trabajo":-48839,"apalancamiento":1.75159240937743,"deuda_patrimonio":0.75159240937743,"endeudamiento_activo":0.42909092626438655,"deuda_neta_ebitda":null,"cobertura_intereses":null,"naves":1468,"carga_tm":19666106,"teu":944636,"contenedores":554613,"ingreso_por_tm":12.237755659407103,"costo_por_tm":5.050821957331054,"ebitda_por_tm":null,"ingreso_por_teu":254.7743257720434,"tm_por_nave":13396.529972752043,"ingreso_por_nave":163943.4604904632,"rotacion_activos":0.5757167887486245,"intensidad_capital":1.7369651529072057,"dias_cobro":7.091648695926771},{"anio":2022,"ingresos_totales":272584,"ingresos_servicios":258006,"ingresos_construccion":14578,"costos_totales":117153,"costo_servicios":102575,"utilidad_bruta":155431,"gastos_admin":46789,"gastos_venta":2946,"utilidad_operativa":105721,"ingresos_financieros":407,"gastos_financieros":3785,"uai":103082,"impuesto_renta":37348,"utilidad_neta":65734,"ebitda":null,"dep_amort":null,"efectivo":37034,"ctas_cobrar_com":6250,"inventarios":2786,"activo_corriente":54316,"activo_no_corriente":373743,"activo_total":428059,"intangibles":348472,"ppe":22328,"pasivo_corriente":98832,"pasivo_no_corriente":39762,"pasivo_total":138594,"deuda_financiera":52564,"patrimonio":289465,"margen_bruto":0.5702132186775453,"margen_operativo":0.3878474158424559,"margen_neto":0.24115135150999326,"margen_ebitda":null,"roa":0.15356294342602306,"roe":0.2270879035461973,"roic_aprox":0.1971085921918884,"liquidez_corriente":0.5495790836975878,"prueba_acida":0.5213898332523879,"capital_trabajo":-44516,"apalancamiento":1.4787936365363687,"deuda_patrimonio":0.4787936365363688,"endeudamiento_activo":0.3237731247328055,"deuda_neta_ebitda":null,"cobertura_intereses":null,"naves":1458,"carga_tm":18384262,"teu":952083,"contenedores":540257,"ingreso_por_tm":14.03406892264699,"costo_por_tm":5.5795005532449435,"ebitda_por_tm":null,"ingreso_por_teu":270.9910795592401,"tm_por_nave":12609.233196159123,"ingreso_por_nave":176958.84773662552,"rotacion_activos":0.636790722774197,"intensidad_capital":1.5703746368092037,"dias_cobro":8.841848639178934},{"anio":2023,"ingresos_totales":269903,"ingresos_servicios":259145,"ingresos_construccion":10758,"costos_totales":105504,"costo_servicios":94746,"utilidad_bruta":164399,"gastos_admin":54384,"gastos_venta":3656,"utilidad_operativa":106372,"ingresos_financieros":1834,"gastos_financieros":4141,"uai":104173,"impuesto_renta":41322,"utilidad_neta":62851,"ebitda":null,"dep_amort":null,"efectivo":67618,"ctas_cobrar_com":5203,"inventarios":2864,"activo_corriente":84482,"activo_no_corriente":367548,"activo_total":452030,"intangibles":342202,"ppe":23485,"pasivo_corriente":82597,"pasivo_no_corriente":37833,"pasivo_total":120430,"deuda_financiera":32404,"patrimonio":331600,"margen_bruto":0.6091040114411473,"margen_operativo":0.3941119587407328,"margen_neto":0.23286514043934303,"margen_ebitda":null,"roa":0.13904165652722164,"roe":0.18953860072376358,"roic_aprox":0.17631050506387738,"liquidez_corriente":1.0228216521181157,"prueba_acida":0.988147269271281,"capital_trabajo":1885,"apalancamiento":1.3631785283474065,"deuda_patrimonio":0.3631785283474065,"endeudamiento_activo":0.2664203703294029,"deuda_neta_ebitda":null,"cobertura_intereses":null,"naves":1487,"carga_tm":17901682,"teu":1075765,"contenedores":616784,"ingreso_por_tm":14.47601404158559,"costo_por_tm":5.292575301024787,"ebitda_por_tm":null,"ingreso_por_teu":240.89368960693088,"tm_por_nave":12038.790854068595,"ingreso_por_nave":174273.70544720915,"rotacion_activos":0.5970909010463907,"intensidad_capital":1.674786867874755,"dias_cobro":7.32831040537151},{"anio":2024,"ingresos_totales":331736,"ingresos_servicios":285633,"ingresos_construccion":46103,"costos_totales":156855,"costo_servicios":110752,"utilidad_bruta":174881,"gastos_admin":49574,"gastos_venta":1432,"utilidad_operativa":123875,"ingresos_financieros":4322,"gastos_financieros":2128,"uai":125932,"impuesto_renta":45279,"utilidad_neta":80653,"ebitda":150939.9,"dep_amort":27064.9,"efectivo":59669,"ctas_cobrar_com":6127,"inventarios":2591,"activo_corriente":77982,"activo_no_corriente":397118,"activo_total":475100,"intangibles":367507,"ppe":23273,"pasivo_corriente":98871,"pasivo_no_corriente":24266,"pasivo_total":123137,"deuda_financiera":10925,"patrimonio":351963,"margen_bruto":0.5271691947813925,"margen_operativo":0.3734144018134902,"margen_neto":0.2431240504497552,"margen_ebitda":0.455,"roa":0.1697600505156809,"roe":0.22915192790151237,"roic_aprox":0.21862281693065433,"liquidez_corriente":0.7887247018842735,"prueba_acida":0.7625188376773776,"capital_trabajo":-20889,"apalancamiento":1.3498577975525836,"deuda_patrimonio":0.34985779755258367,"endeudamiento_activo":0.25918122500526203,"deuda_neta_ebitda":-0.32293652280629875,"cobertura_intereses":70.9303947368421,"naves":1500,"carga_tm":19251320,"teu":1045764,"contenedores":603581,"ingreso_por_tm":14.837060523642014,"costo_por_tm":5.752956160928186,"ebitda_por_tm":7.8404950933234705,"ingreso_por_teu":273.1333264484147,"tm_por_nave":12834.213333333333,"ingreso_por_nave":190422.0,"rotacion_activos":0.6982445800884024,"intensidad_capital":1.4321629247353318,"dias_cobro":7.829469984210508},{"anio":2025,"ingresos_totales":383594,"ingresos_servicios":338335,"ingresos_construccion":45259,"costos_totales":175160,"costo_servicios":129901,"utilidad_bruta":208434,"gastos_admin":56740,"gastos_venta":3965,"utilidad_operativa":158897,"ingresos_financieros":2709,"gastos_financieros":418,"uai":164471,"impuesto_renta":57440,"utilidad_neta":107031,"ebitda":184892.3,"dep_amort":25995.3,"efectivo":75820,"ctas_cobrar_com":6230,"inventarios":2833,"activo_corriente":111311,"activo_no_corriente":426162,"activo_total":537473,"intangibles":393041,"ppe":26520,"pasivo_corriente":83128,"pasivo_no_corriente":25391,"pasivo_total":108519,"deuda_financiera":0,"patrimonio":428954,"margen_bruto":0.5433713770288378,"margen_operativo":0.4142322351235942,"margen_neto":0.2790215696804434,"margen_ebitda":0.482,"roa":0.19913744504375103,"roe":0.24951626514731184,"roic_aprox":0.24106004087719057,"liquidez_corriente":1.3390313733038206,"prueba_acida":1.3049514002502165,"capital_trabajo":28183,"apalancamiento":1.252985168572854,"deuda_patrimonio":0.25298516857285397,"endeudamiento_activo":0.20190595620617222,"deuda_neta_ebitda":-0.41007655115647107,"cobertura_intereses":442.3260956937799,"naves":1500,"carga_tm":20001027,"teu":1164789,"contenedores":674568,"ingreso_por_tm":16.915881369491675,"costo_por_tm":6.494716496307914,"ebitda_por_tm":9.244140713374367,"ingreso_por_teu":290.46891754643974,"tm_por_nave":13334.018,"ingreso_por_nave":225556.66666666666,"rotacion_activos":0.7136991067458273,"intensidad_capital":1.401150695787734,"dias_cobro":6.721001374377466}],"m":{"2024":{"anio":2024,"ebit":123875,"dep_amort":27064.880000000005,"ebitda":150939.88,"tasa_impositiva":0.35955118635454053,"origen_tasa":"efectiva","nopat":79335.59679033128,"capital_trabajo":-66789,"var_capital_trabajo":-24492,"capex":52157.880000000005,"capex_regulador":null,"fcff":78734.59679033128,"fcff_capex_regulador":null,"intereses_netos_dt":-1405.144697138138,"var_deuda":-21479,"fcfe":58660.74148746942,"deuda_financiera":10925,"capital_invertido":362888,"capital_invertido_medio":363446.0,"roic":0.21828716450402888,"margen_fcff":0.23734112906145635,"conversion_caja":0.5216288550801238,"capex_sobre_da":1.9271424813263534,"capex_sobre_ingresos":0.15722707212964526,"fcf_yield_capital":0.2166335488362268,"spread":{"8":0.1382871645040289,"10":0.11828716450402887,"12":0.09828716450402888},"eva":{"8":50259.916790331285,"10":42990.99679033128,"12":35722.07679033128},"capex_subestimado":false},"2025":{"anio":2025,"ebit":158897,"dep_amort":25995.30799999999,"ebitda":184892.308,"tasa_impositiva":0.34924089961148164,"origen_tasa":"efectiva","nopat":103403.66877443441,"capital_trabajo":-45170,"var_capital_trabajo":21619,"capex":54776.30799999999,"capex_regulador":78240.0,"fcff":53003.66877443441,"fcff_capex_regulador":29539.9767744344,"intereses_netos_dt":-1490.8890989900956,"var_deuda":-10925,"fcfe":43569.55787342451,"deuda_financiera":0,"capital_invertido":428954,"capital_invertido_medio":395921.0,"roic":0.2611724782833808,"margen_fcff":0.13817648027454654,"conversion_caja":0.28667319559034554,"capex_sobre_da":2.10716133850001,"capex_sobre_ingresos":0.1427976141441211,"fcf_yield_capital":0.1338743556781136,"spread":{"8":0.1811724782833808,"10":0.1611724782833808,"12":0.1411724782833808},"eva":{"8":71729.9887744344,"10":63811.56877443441,"12":55893.14877443441},"capex_subestimado":false}},"u":{"2021":{"segmento":"Multipropósito con contenedores","pct_contenedorizada":0.4782197934136082,"ingreso_por_tm":12.237755659407103,"costo_por_tm":5.050821957331054,"ebitda_por_tm":null,"ingreso_por_teu":254.7743257720434,"costo_por_teu":105.15161395500489,"ebitda_por_teu":null,"ingreso_por_recalada":163943.4604904632,"ebitda_por_recalada":null,"ebitda_sobre_activo_fijo":null,"ebitda_sobre_activo":null,"nopat_sobre_activo":null,"rotacion_activo":0.5757167887486245},"2022":{"segmento":"Multipropósito con contenedores","pct_contenedorizada":0.4782197934136082,"ingreso_por_tm":14.03406892264699,"costo_por_tm":5.5795005532449435,"ebitda_por_tm":null,"ingreso_por_teu":270.9910795592401,"costo_por_teu":107.73745566300417,"ebitda_por_teu":null,"ingreso_por_recalada":176958.84773662552,"ebitda_por_recalada":null,"ebitda_sobre_activo_fijo":null,"ebitda_sobre_activo":null,"nopat_sobre_activo":null,"rotacion_activo":0.636790722774197},"2023":{"segmento":"Multipropósito con contenedores","pct_contenedorizada":0.4782197934136082,"ingreso_por_tm":14.47601404158559,"costo_por_tm":5.292575301024787,"ebitda_por_tm":null,"ingreso_por_teu":240.89368960693088,"costo_por_teu":88.07313865016988,"ebitda_por_teu":null,"ingreso_por_recalada":174273.70544720915,"ebitda_por_recalada":null,"ebitda_sobre_activo_fijo":null,"ebitda_sobre_activo":null,"nopat_sobre_activo":null,"rotacion_activo":0.5970909010463907},"2024":{"segmento":"Multipropósito con contenedores","pct_contenedorizada":0.4782197934136082,"ingreso_por_tm":14.837060523642014,"costo_por_tm":5.752956160928186,"ebitda_por_tm":7.8404950933234705,"ingreso_por_teu":273.1333264484147,"costo_por_teu":105.9053476692638,"ebitda_por_teu":144.33455349390493,"ingreso_por_recalada":190422.0,"ebitda_por_recalada":100626.58666666667,"ebitda_sobre_activo_fijo":0.3862528276779774,"ebitda_sobre_activo":0.3177012839402231,"nopat_sobre_activo":null,"rotacion_activo":0.6982445800884024},"2025":{"segmento":"Multipropósito con contenedores","pct_contenedorizada":0.4782197934136082,"ingreso_por_tm":16.915881369491675,"costo_por_tm":6.494716496307914,"ebitda_por_tm":9.244140713374367,"ingreso_por_teu":290.46891754643974,"costo_por_teu":111.5232029148627,"ebitda_por_teu":158.7345931323184,"ingreso_por_recalada":225556.66666666666,"ebitda_por_recalada":123261.53866666666,"ebitda_sobre_activo_fijo":0.4406803968910361,"ebitda_sobre_activo":0.3440029694514887,"nopat_sobre_activo":null,"rotacion_activo":0.7136991067458273}}},"DPW":{"meta":{"nombre":"DP World Callao","terminal":"Terminal de Contenedores Muelle Sur - Callao","operador":"DP World Callao S.R.L.","tipo":"Contenedores","inicio":2010,"plazo":30,"modalidad":"Autofinanciada","compromiso_inv":739.71,"inv_acum":732.52,"inv_2025":1.19,"avance_inv":99.0,"segmento":"Contenedores","pct_contenedorizada":1.0},"s":[{"anio":2021,"ingresos_totales":176447,"ingresos_servicios":176447,"ingresos_construccion":0,"costos_totales":57658,"costo_servicios":57658,"utilidad_bruta":118789,"gastos_admin":29064,"gastos_venta":0,"utilidad_operativa":90006,"ingresos_financieros":302,"gastos_financieros":11733,"uai":78040,"impuesto_renta":23980,"utilidad_neta":54060,"ebitda":113723,"dep_amort":23717,"efectivo":154656,"ctas_cobrar_com":11173,"inventarios":4580,"activo_corriente":174480,"activo_no_corriente":325668,"activo_total":500148,"intangibles":85095,"ppe":240573,"pasivo_corriente":43363,"pasivo_no_corriente":289507,"pasivo_total":332870,"deuda_financiera":259426,"patrimonio":167278,"margen_bruto":0.6732276547631867,"margen_operativo":0.510102183658549,"margen_neto":0.30638095292070705,"margen_ebitda":0.6445164837033217,"roa":0.10808800595023874,"roe":0.3231745955834001,"roic_aprox":0.14611793570510043,"liquidez_corriente":4.023706846851002,"prueba_acida":3.9180868482346702,"capital_trabajo":131117,"apalancamiento":2.989920969882471,"deuda_patrimonio":1.9899209698824711,"endeudamiento_activo":0.6655429992722154,"deuda_neta_ebitda":0.9212736209913562,"cobertura_intereses":9.692576493650387,"naves":644,"carga_tm":16428773,"teu":1467881,"contenedores":856215,"ingreso_por_tm":10.740120397305386,"costo_por_tm":3.509574330353216,"ebitda_por_tm":6.9221846330215895,"ingreso_por_teu":120.20524824560029,"tm_por_nave":25510.517080745343,"ingreso_por_nave":273986.0248447205,"rotacion_activos":0.3527895742860113,"intensidad_capital":2.8345508849682908,"dias_cobro":23.11257771455451},{"anio":2022,"ingresos_totales":177533,"ingresos_servicios":177533,"ingresos_construccion":0,"costos_totales":60561,"costo_servicios":60561,"utilidad_bruta":116972,"gastos_admin":31333,"gastos_venta":0,"utilidad_operativa":85723,"ingresos_financieros":811,"gastos_financieros":12033,"uai":75862,"impuesto_renta":23591,"utilidad_neta":52271,"ebitda":110049,"dep_amort":24326,"efectivo":92733,"ctas_cobrar_com":7390,"inventarios":5247,"activo_corriente":124916,"activo_no_corriente":427128,"activo_total":552044,"intangibles":79250,"ppe":347878,"pasivo_corriente":295859,"pasivo_no_corriente":21368,"pasivo_total":317227,"deuda_financiera":259733,"patrimonio":234817,"margen_bruto":0.6588746880861587,"margen_operativo":0.48285670833028227,"margen_neto":0.2944297679867968,"margen_ebitda":0.6198791210648161,"roa":0.09468629312156278,"roe":0.22260313350396266,"roic_aprox":0.11943281696675513,"liquidez_corriente":0.4222146360259448,"prueba_acida":0.40447983667895854,"capital_trabajo":-170943,"apalancamiento":2.350954147272131,"deuda_patrimonio":1.3509541472721311,"endeudamiento_activo":0.574640789502286,"deuda_neta_ebitda":1.51750583830839,"cobertura_intereses":9.145599601096983,"naves":607,"carga_tm":15379657,"teu":1418538,"contenedores":823522,"ingreso_por_tm":11.543365368941583,"costo_por_tm":3.937734112015632,"ebitda_por_tm":7.1554911790295455,"ingreso_por_teu":125.15209321146138,"tm_por_nave":25337.161449752883,"ingreso_por_nave":292476.11202635913,"rotacion_activos":0.321592119468738,"intensidad_capital":3.109528932649141,"dias_cobro":15.193513318650616},{"anio":2023,"ingresos_totales":198359,"ingresos_servicios":198359,"ingresos_construccion":0,"costos_totales":65186,"costo_servicios":65186,"utilidad_bruta":133173,"gastos_admin":38565,"gastos_venta":0,"utilidad_operativa":94624,"ingresos_financieros":2499,"gastos_financieros":13461,"uai":84680,"impuesto_renta":26079,"utilidad_neta":58601,"ebitda":118861,"dep_amort":24237,"efectivo":73707,"ctas_cobrar_com":10340,"inventarios":5834,"activo_corriente":114859,"activo_no_corriente":503047,"activo_total":617906,"intangibles":73406,"ppe":429641,"pasivo_corriente":53726,"pasivo_no_corriente":276110,"pasivo_total":329836,"deuda_financiera":254697,"patrimonio":288070,"margen_bruto":0.6713736205566675,"margen_operativo":0.4770340644992161,"margen_neto":0.2954289949031806,"margen_ebitda":0.5992216133374336,"roa":0.09483804980045508,"roe":0.203426250564099,"roic_aprox":0.12064575504773739,"liquidez_corriente":2.137866210028664,"prueba_acida":2.02927818933105,"capital_trabajo":61133,"apalancamiento":2.14498559377929,"deuda_patrimonio":1.1449855937792897,"endeudamiento_activo":0.5337964026890821,"deuda_neta_ebitda":1.5227029892058792,"cobertura_intereses":8.830027486813758,"naves":823,"carga_tm":17463735,"teu":1586465,"contenedores":957325,"ingreso_por_tm":11.358337720997255,"costo_por_tm":3.732649401745961,"ebitda_por_tm":6.8061614540074045,"ingreso_por_teu":125.03206815151925,"tm_por_nave":21219.60510328068,"ingreso_por_nave":241019.4410692588,"rotacion_activos":0.32101808365673745,"intensidad_capital":3.115089307770255,"dias_cobro":19.026613362640465},{"anio":2024,"ingresos_totales":252900,"ingresos_servicios":252900,"ingresos_construccion":0,"costos_totales":94706,"costo_servicios":94706,"utilidad_bruta":158194,"gastos_admin":49276,"gastos_venta":0,"utilidad_operativa":109002,"ingresos_financieros":2168,"gastos_financieros":18405,"uai":92345,"impuesto_renta":34717,"utilidad_neta":57628,"ebitda":142116,"dep_amort":33114,"efectivo":123040,"ctas_cobrar_com":13009,"inventarios":6635,"activo_corriente":160795,"activo_no_corriente":546155,"activo_total":706950,"intangibles":67562,"ppe":478593,"pasivo_corriente":142798,"pasivo_no_corriente":316055,"pasivo_total":458853,"deuda_financiera":295547,"patrimonio":248097,"margen_bruto":0.6255199683669435,"margen_operativo":0.43100830367734283,"margen_neto":0.22786872281534204,"margen_ebitda":0.5619454329774615,"roa":0.08151637315227385,"roe":0.23228011624485584,"roic_aprox":0.1251238299030843,"liquidez_corriente":1.1260311769072395,"prueba_acida":1.0795669407134554,"capital_trabajo":17997,"apalancamiento":2.8494903203182624,"deuda_patrimonio":1.8494903203182627,"endeudamiento_activo":0.6490600466793974,"deuda_neta_ebitda":1.2138464353063694,"cobertura_intereses":7.72159739201304,"naves":901,"carga_tm":21345421,"teu":1888133,"contenedores":1131107,"ingreso_por_tm":11.847974326671748,"costo_por_tm":4.4368298006396785,"ebitda_por_tm":6.657915062907403,"ingreso_por_teu":133.94183566517825,"tm_por_nave":23690.811320754718,"ingreso_por_nave":280688.1243063263,"rotacion_activos":0.3577339274347549,"intensidad_capital":2.795373665480427,"dias_cobro":18.77534598655595},{"anio":2025,"ingresos_totales":294950,"ingresos_servicios":294950,"ingresos_construccion":0,"costos_totales":102521,"costo_servicios":102521,"utilidad_bruta":192429,"gastos_admin":64236,"gastos_venta":0,"utilidad_operativa":128271,"ingresos_financieros":1968,"gastos_financieros":18335,"uai":113223,"impuesto_renta":39275,"utilidad_neta":73948,"ebitda":178360,"dep_amort":50089,"efectivo":53271,"ctas_cobrar_com":12332,"inventarios":8161,"activo_corriente":84948,"activo_no_corriente":519639,"activo_total":604587,"intangibles":61717,"ppe":457922,"pasivo_corriente":91027,"pasivo_no_corriente":316878,"pasivo_total":407905,"deuda_financiera":296589,"patrimonio":196682,"margen_bruto":0.6524122732666554,"margen_operativo":0.43489065943380234,"margen_neto":0.250713680284794,"margen_ebitda":0.604712663163248,"roa":0.12231159452651148,"roe":0.375977466163655,"roic_aprox":0.16983792360242256,"liquidez_corriente":0.9332176167510738,"prueba_acida":0.8435628989201006,"capital_trabajo":-6079,"apalancamiento":3.0739315239828757,"deuda_patrimonio":2.0739315239828757,"endeudamiento_activo":0.6746837097059646,"deuda_neta_ebitda":1.3641960080735591,"cobertura_intereses":9.727842923370602,"naves":908,"carga_tm":21713237,"teu":1972654,"contenedores":1151383,"ingreso_por_tm":13.583879731981003,"costo_por_tm":4.721589876258432,"ebitda_por_tm":8.2143440888155,"ingreso_por_teu":149.5193784617069,"tm_por_nave":23913.256607929514,"ingreso_por_nave":324834.8017621145,"rotacion_activos":0.48785369185907074,"intensidad_capital":2.0497948804882182,"dias_cobro":15.26082386845228}],"m":{"2022":{"anio":2022,"ebit":85723,"dep_amort":24326,"ebitda":110049,"tasa_impositiva":0.31097255542959584,"origen_tasa":"efectiva","nopat":59065.49963090875,"capital_trabajo":-1931,"var_capital_trabajo":15505,"capex":125786,"capex_regulador":null,"fcff":-57899.500369091256,"fcff_capex_regulador":null,"intereses_netos_dt":7732.265982969075,"var_deuda":307,"fcfe":-65324.76635206034,"deuda_financiera":259733,"capital_invertido":494550,"capital_invertido_medio":460627.0,"roic":0.12822847907506235,"margen_fcff":-0.3261337349624648,"conversion_caja":-0.5261247296121841,"capex_sobre_da":5.170846008386089,"capex_sobre_ingresos":0.7085217959477956,"fcf_yield_capital":-0.12569714838489984,"spread":{"8":0.04822847907506235,"10":0.028228479075062346,"12":0.008228479075062356},"eva":{"8":22215.339630908744,"10":13002.799630908743,"12":3790.259630908748},"capex_subestimado":false},"2023":{"anio":2023,"ebit":94624,"dep_amort":24237,"ebitda":118861,"tasa_impositiva":0.3079711856400567,"origen_tasa":"efectiva","nopat":65482.53452999528,"capital_trabajo":-6376,"var_capital_trabajo":-4445,"capex":100156,"capex_regulador":null,"fcff":-5991.46547000471,"fcff_capex_regulador":null,"intereses_netos_dt":7586.019863013699,"var_deuda":-5036,"fcfe":-18613.48533301841,"deuda_financiera":254697,"capital_invertido":542767,"capital_invertido_medio":518658.5,"roic":0.12625366118553014,"margen_fcff":-0.03020516069351383,"conversion_caja":-0.050407328476158794,"capex_sobre_da":4.13235961546396,"capex_sobre_ingresos":0.5049228923315806,"fcf_yield_capital":-0.011551850533645377,"spread":{"8":0.046253661185530134,"10":0.02625366118553013,"12":0.0062536611855301405},"eva":{"8":23989.854529995282,"10":13616.684529995278,"12":3243.514529995284},"capex_subestimado":false},"2024":{"anio":2024,"ebit":109002,"dep_amort":33114,"ebitda":142116,"tasa_impositiva":0.37594888732470627,"origen_tasa":"efectiva","nopat":68022.81938383236,"capital_trabajo":-82148,"var_capital_trabajo":-75772,"capex":76222,"capex_regulador":null,"fcff":100686.81938383236,"fcff_capex_regulador":null,"intereses_netos_dt":10132.717916508744,"var_deuda":40850,"fcfe":131404.1014673236,"deuda_financiera":295547,"capital_invertido":543644,"capital_invertido_medio":543205.5,"roic":0.12522483550669566,"margen_fcff":0.3981289813516503,"conversion_caja":0.7084833472925804,"capex_sobre_da":2.30180588270822,"capex_sobre_ingresos":0.30139185448793987,"fcf_yield_capital":0.18535677452424978,"spread":{"8":0.04522483550669566,"10":0.02522483550669566,"12":0.005224835506695669},"eva":{"8":24566.37938383237,"10":13702.269383832368,"12":2838.1593838323743},"capex_subestimado":false},"2025":{"anio":2025,"ebit":128271,"dep_amort":50089,"ebitda":178360,"tasa_impositiva":0.3468818172986054,"origen_tasa":"efectiva","nopat":83776.12241329058,"capital_trabajo":-40855,"var_capital_trabajo":41293,"capex":23573,"capex_regulador":1190.0,"fcff":68999.12241329058,"fcff_capex_regulador":91382.12241329058,"intereses_netos_dt":10689.585296273724,"var_deuda":1042,"fcfe":59351.53711701685,"deuda_financiera":296589,"capital_invertido":493271,"capital_invertido_medio":518457.5,"roic":0.16158725143968516,"margen_fcff":0.2339349802111903,"conversion_caja":0.38685311960804314,"capex_sobre_da":0.470622292319671,"capex_sobre_ingresos":0.07992202068147143,"fcf_yield_capital":0.13308539738221664,"spread":{"8":0.08158725143968516,"10":0.06158725143968516,"12":0.04158725143968517},"eva":{"8":42299.52241329057,"10":31930.37241329057,"12":21561.222413290572},"capex_subestimado":false}},"u":{"2021":{"segmento":"Contenedores","pct_contenedorizada":1.0,"ingreso_por_teu":120.20524824560029,"costo_por_teu":39.279750878988146,"ebitda_por_teu":77.47426392193918,"ingreso_por_recalada":273986.0248447205,"ebitda_por_recalada":176588.50931677019,"ebitda_sobre_activo_fijo":0.3491991844455089,"ebitda_sobre_activo":0.2273786959060118,"nopat_sobre_activo":null,"rotacion_activo":0.3527895742860113},"2022":{"segmento":"Contenedores","pct_contenedorizada":1.0,"ingreso_por_teu":125.15209321146138,"costo_por_teu":42.69254683342991,"ebitda_por_teu":77.57916953934262,"ingreso_por_recalada":292476.11202635913,"ebitda_por_recalada":181299.8352553542,"ebitda_sobre_activo_fijo":0.2576487610271394,"ebitda_sobre_activo":0.19934824035765264,"nopat_sobre_activo":null,"rotacion_activo":0.321592119468738},"2023":{"segmento":"Contenedores","pct_contenedorizada":1.0,"ingreso_por_teu":125.03206815151925,"costo_por_teu":41.08883587094578,"ebitda_por_teu":74.92191759666933,"ingreso_por_recalada":241019.4410692588,"ebitda_por_recalada":144424.05832320778,"ebitda_sobre_activo_fijo":0.23628209690148236,"ebitda_sobre_activo":0.19236097399928145,"nopat_sobre_activo":null,"rotacion_activo":0.32101808365673745},"2024":{"segmento":"Contenedores","pct_contenedorizada":1.0,"ingreso_por_teu":133.94183566517825,"costo_por_teu":50.15854285688561,"ebitda_por_teu":75.26800283666458,"ingreso_por_recalada":280688.1243063263,"ebitda_por_recalada":157731.40954495006,"ebitda_sobre_activo_fijo":0.26021184462286345,"ebitda_sobre_activo":0.20102694674305113,"nopat_sobre_activo":null,"rotacion_activo":0.3577339274347549},"2025":{"segmento":"Contenedores","pct_contenedorizada":1.0,"ingreso_por_teu":149.5193784617069,"costo_por_teu":51.97110086208732,"ebitda_por_teu":90.41626154409238,"ingreso_por_recalada":324834.8017621145,"ebitda_por_recalada":196431.718061674,"ebitda_sobre_activo_fijo":0.3432382865797217,"ebitda_sobre_activo":0.29501130523812125,"nopat_sobre_activo":null,"rotacion_activo":0.48785369185907074}}},"TISUR":{"meta":{"nombre":"TISUR Matarani","terminal":"Terminal Portuario de Matarani","operador":"Terminal Internacional del Sur S.A.","tipo":"Multipropósito / Graneles","inicio":1999,"plazo":30,"modalidad":"Autosostenible","compromiso_inv":681.97,"inv_acum":290.4,"inv_2025":0.0,"avance_inv":42.58,"segmento":"Graneles y carga fraccionada","pct_contenedorizada":0.011720126422072551},"s":[{"anio":2021,"ingresos_totales":101023,"ingresos_servicios":101023,"ingresos_construccion":0,"costos_totales":33689,"costo_servicios":33689,"utilidad_bruta":67334,"gastos_admin":16026,"gastos_venta":0,"utilidad_operativa":51129,"ingresos_financieros":19,"gastos_financieros":7345,"uai":43518,"impuesto_renta":11887,"utilidad_neta":31631,"ebitda":63442.4,"dep_amort":12313.4,"efectivo":28200,"ctas_cobrar_com":9774,"inventarios":1180,"activo_corriente":42266,"activo_no_corriente":250656,"activo_total":292922,"intangibles":240350,"ppe":9635,"pasivo_corriente":20416,"pasivo_no_corriente":182581,"pasivo_total":202997,"deuda_financiera":136055,"patrimonio":89925,"margen_bruto":0.6665214852063391,"margen_operativo":0.5061124694376528,"margen_neto":0.31310691624679526,"margen_ebitda":0.628,"roa":0.10798437809382702,"roe":0.35174867945510147,"roic_aprox":0.1644528062382932,"liquidez_corriente":2.070239028213166,"prueba_acida":2.012441222570533,"capital_trabajo":21850,"apalancamiento":3.2574033917153185,"deuda_patrimonio":2.2574033917153185,"endeudamiento_activo":0.6930070121056118,"deuda_neta_ebitda":1.700044846948204,"cobertura_intereses":8.637500884955752,"naves":460,"carga_tm":6457967,"teu":11358,"contenedores":7436,"ingreso_por_tm":15.643158288049474,"costo_por_tm":5.216657192580885,"ebitda_por_tm":9.82390340489507,"ingreso_por_teu":8894.435640077478,"tm_por_nave":14039.058695652175,"ingreso_por_nave":219615.21739130435,"rotacion_activos":0.34488020701756783,"intensidad_capital":2.8995575265038656,"dias_cobro":35.31383942270572},{"anio":2022,"ingresos_totales":112460,"ingresos_servicios":112460,"ingresos_construccion":0,"costos_totales":34888,"costo_servicios":34888,"utilidad_bruta":77572,"gastos_admin":19608,"gastos_venta":0,"utilidad_operativa":58148,"ingresos_financieros":36,"gastos_financieros":7093,"uai":50663,"impuesto_renta":12924,"utilidad_neta":37739,"ebitda":70624.9,"dep_amort":12476.9,"efectivo":15387,"ctas_cobrar_com":18986,"inventarios":1047,"activo_corriente":40577,"activo_no_corriente":240960,"activo_total":281537,"intangibles":231579,"ppe":8643,"pasivo_corriente":45821,"pasivo_no_corriente":155052,"pasivo_total":200873,"deuda_financiera":107295,"patrimonio":80664,"margen_bruto":0.689774141917126,"margen_operativo":0.5170549528721323,"margen_neto":0.3355770940778944,"margen_ebitda":0.628,"roa":0.1340463242841971,"roe":0.4678543092333631,"roic_aprox":0.23044704376160433,"liquidez_corriente":0.8855546583444273,"prueba_acida":0.8627048733113638,"capital_trabajo":-5244,"apalancamiento":3.4902434791232766,"deuda_patrimonio":2.4902434791232766,"endeudamiento_activo":0.7134870372277888,"deuda_neta_ebitda":1.3013544235402594,"cobertura_intereses":9.956982940927675,"naves":472,"carga_tm":6430921,"teu":5310,"contenedores":3466,"ingreso_por_tm":17.487386332377586,"costo_por_tm":5.425039430588558,"ebitda_por_tm":10.982078616733125,"ingreso_por_teu":21178.907721280604,"tm_por_nave":13624.832627118643,"ingreso_por_nave":238262.71186440677,"rotacion_activos":0.3994501610800712,"intensidad_capital":2.5034412235461496,"dias_cobro":61.62093188689312},{"anio":2023,"ingresos_totales":131994,"ingresos_servicios":131994,"ingresos_construccion":0,"costos_totales":49247,"costo_servicios":49247,"utilidad_bruta":82747,"gastos_admin":10657,"gastos_venta":0,"utilidad_operativa":72270,"ingresos_financieros":393,"gastos_financieros":6441,"uai":65852,"impuesto_renta":17219,"utilidad_neta":48633,"ebitda":84872.1,"dep_amort":12602.1,"efectivo":7353,"ctas_cobrar_com":15006,"inventarios":434,"activo_corriente":27414,"activo_no_corriente":234241,"activo_total":261655,"intangibles":222992,"ppe":9748,"pasivo_corriente":25586,"pasivo_no_corriente":158437,"pasivo_total":184023,"deuda_financiera":112160,"patrimonio":77632,"margen_bruto":0.6268997075624649,"margen_operativo":0.5475248874948861,"margen_neto":0.368448565843902,"margen_ebitda":0.643,"roa":0.18586688578471652,"roe":0.6264555853256389,"roic_aprox":0.2812174354258508,"liquidez_corriente":1.071445321660283,"prueba_acida":1.0544829203470647,"capital_trabajo":1828,"apalancamiento":3.3704529060181367,"deuda_patrimonio":2.3704529060181367,"endeudamiento_activo":0.7033039689667692,"deuda_neta_ebitda":1.2348810520182227,"cobertura_intereses":13.176857941313461,"naves":496,"carga_tm":7553709,"teu":7300,"contenedores":5090,"ingreso_por_tm":17.474064727672193,"costo_por_tm":6.519578659966911,"ebitda_por_tm":11.235823619893221,"ingreso_por_teu":18081.369863013697,"tm_por_nave":15229.252016129032,"ingreso_por_nave":266116.93548387097,"rotacion_activos":0.5044581605549292,"intensidad_capital":1.9823249541645833,"dias_cobro":41.4957498068094},{"anio":2024,"ingresos_totales":133421,"ingresos_servicios":133421,"ingresos_construccion":0,"costos_totales":54718,"costo_servicios":54718,"utilidad_bruta":78703,"gastos_admin":8993,"gastos_venta":0,"utilidad_operativa":70081,"ingresos_financieros":310,"gastos_financieros":5954,"uai":64352,"impuesto_renta":16674,"utilidad_neta":47678,"ebitda":82987.9,"dep_amort":12906.9,"efectivo":6836,"ctas_cobrar_com":13395,"inventarios":340,"activo_corriente":22954,"activo_no_corriente":224297,"activo_total":247251,"intangibles":212744,"ppe":10719,"pasivo_corriente":21802,"pasivo_no_corriente":155173,"pasivo_total":176975,"deuda_financiera":111602,"patrimonio":70276,"margen_bruto":0.5898846508420713,"margen_operativo":0.5252621401428561,"margen_neto":0.3573500423471567,"margen_ebitda":0.622,"roa":0.19283238490440888,"roe":0.6784392964881325,"roic_aprox":0.2854802712504553,"liquidez_corriente":1.0528391890652233,"prueba_acida":1.0372442895147234,"capital_trabajo":1152,"apalancamiento":3.518285047526894,"deuda_patrimonio":2.518285047526894,"endeudamiento_activo":0.7157706136678922,"deuda_neta_ebitda":1.2624255821893569,"cobertura_intereses":13.938169633859589,"naves":526,"carga_tm":8216404,"teu":4826,"contenedores":3398,"ingreso_por_tm":16.23836899938221,"costo_por_tm":6.65960437193692,"ebitda_por_tm":10.100265517615735,"ingreso_por_teu":27646.290924160796,"tm_por_nave":15620.539923954373,"ingreso_por_nave":253652.09125475286,"rotacion_activos":0.5396176355201799,"intensidad_capital":1.8531640446406488,"dias_cobro":36.64471859752213},{"anio":2025,"ingresos_totales":141314,"ingresos_servicios":141314,"ingresos_construccion":0,"costos_totales":61136,"costo_servicios":61136,"utilidad_bruta":80178,"gastos_admin":9181,"gastos_venta":0,"utilidad_operativa":72019,"ingresos_financieros":266,"gastos_financieros":5852,"uai":64987,"impuesto_renta":17307,"utilidad_neta":47680,"ebitda":84364.5,"dep_amort":12345.5,"efectivo":3466,"ctas_cobrar_com":14971,"inventarios":330,"activo_corriente":21967,"activo_no_corriente":218161,"activo_total":240128,"intangibles":205831,"ppe":10250,"pasivo_corriente":62890,"pasivo_no_corriente":116832,"pasivo_total":179722,"deuda_financiera":81024,"patrimonio":60406,"margen_bruto":0.5673747823994791,"margen_operativo":0.5096381108736573,"margen_neto":0.33740464497502015,"margen_ebitda":0.597,"roa":0.19856076759061833,"roe":0.7893255636857266,"roic_aprox":0.3736072567093385,"liquidez_corriente":0.3492924153283511,"prueba_acida":0.34404515821275244,"capital_trabajo":-40923,"apalancamiento":3.975234248253485,"deuda_patrimonio":2.975234248253485,"endeudamiento_activo":0.7484424973347548,"deuda_neta_ebitda":0.9193207879081022,"cobertura_intereses":14.416346206425153,"naves":539,"carga_tm":8391889,"teu":9279,"contenedores":6121,"ingreso_por_tm":16.839355239326927,"costo_por_tm":7.285129724666282,"ebitda_por_tm":10.053095077878176,"ingreso_por_teu":15229.442827890936,"tm_por_nave":15569.367346938776,"ingreso_por_nave":262178.107606679,"rotacion_activos":0.5884944696162047,"intensidad_capital":1.6992513126795648,"dias_cobro":38.668603252331685}],"m":{"2022":{"anio":2022,"ebit":58148,"dep_amort":12476.880000000005,"ebitda":70624.88,"tasa_impositiva":0.25509740836507905,"origen_tasa":"efectiva","nopat":43314.595898387386,"capital_trabajo":386,"var_capital_trabajo":186,"capex":2713.8800000000047,"capex_regulador":null,"fcff":52891.595898387386,"fcff_capex_regulador":null,"intereses_netos_dt":5256.777589167637,"var_deuda":-28760,"fcfe":18874.81830921975,"deuda_financiera":107295,"capital_invertido":187959,"capital_invertido_medio":206969.5,"roic":0.2092800915032765,"margen_fcff":0.47031474211619584,"conversion_caja":0.7489088250257895,"capex_sobre_da":0.21751271151121143,"capex_sobre_ingresos":0.024131958029521648,"fcf_yield_capital":0.2555526099178255,"spread":{"8":0.12928009150327652,"10":0.1092800915032765,"12":0.08928009150327651},"eva":{"8":26757.03589838739,"10":22617.645898387385,"12":18478.255898387386},"capex_subestimado":false},"2023":{"anio":2023,"ebit":72270,"dep_amort":12602.142000000007,"ebitda":84872.142,"tasa_impositiva":0.2614802891332078,"origen_tasa":"efectiva","nopat":53372.819504343075,"capital_trabajo":-4204,"var_capital_trabajo":-4590,"capex":5120.142000000007,"capex_regulador":null,"fcff":65444.819504343075,"fcff_capex_regulador":null,"intereses_netos_dt":4466.567211322359,"var_deuda":4865,"fcfe":65843.25229302072,"deuda_financiera":112160,"capital_invertido":189792,"capital_invertido_medio":188875.5,"roic":0.28258201568939895,"margen_fcff":0.49581662427339934,"conversion_caja":0.7710989491032649,"capex_sobre_da":0.4062914066513458,"capex_sobre_ingresos":0.03879071775989823,"fcf_yield_capital":0.3464971343786943,"spread":{"8":0.20258201568939893,"10":0.18258201568939894,"12":0.16258201568939895},"eva":{"8":38262.77950434307,"10":34485.26950434307,"12":30707.75950434307},"capex_subestimado":false},"2024":{"anio":2024,"ebit":70081,"dep_amort":12906.861999999994,"ebitda":82987.862,"tasa_impositiva":0.2591061660865241,"origen_tasa":"efectiva","nopat":51922.5807744903,"capital_trabajo":-4324,"var_capital_trabajo":-120,"capex":3629.8619999999937,"capex_regulador":null,"fcff":61319.5807744903,"fcff_capex_regulador":null,"intereses_netos_dt":4181.604798607657,"var_deuda":-558,"fcfe":56579.97597588264,"deuda_financiera":111602,"capital_invertido":181878,"capital_invertido_medio":185835.0,"roic":0.27940151626168536,"margen_fcff":0.45959467231163237,"conversion_caja":0.7388981869961936,"capex_sobre_da":0.2812350515562958,"capex_sobre_ingresos":0.02720607700436958,"fcf_yield_capital":0.32996787889520435,"spread":{"8":0.19940151626168534,"10":0.17940151626168535,"12":0.15940151626168536},"eva":{"8":37055.7807744903,"10":33339.0807744903,"12":29622.3807744903},"capex_subestimado":false},"2025":{"anio":2025,"ebit":72019,"dep_amort":12345.457999999999,"ebitda":84364.458,"tasa_impositiva":0.26631480142182284,"origen_tasa":"efectiva","nopat":52839.27431640174,"capital_trabajo":-13251,"var_capital_trabajo":-8927,"capex":4963.457999999999,"capex_regulador":0.0,"fcff":69148.27431640173,"fcff_capex_regulador":74111.73231640173,"intereses_netos_dt":4098.365519257698,"var_deuda":-30578,"fcfe":34471.90879714403,"deuda_financiera":81024,"capital_invertido":141430,"capital_invertido_medio":161654.0,"roic":0.3268664822175866,"margen_fcff":0.4893235936736752,"conversion_caja":0.8196375103411644,"capex_sobre_da":0.4020472954506831,"capex_sobre_ingresos":0.03512361124870854,"fcf_yield_capital":0.4277547992403636,"spread":{"8":0.24686648221758656,"10":0.22686648221758657,"12":0.20686648221758658},"eva":{"8":39906.95431640174,"10":36673.874316401736,"12":33440.79431640174},"capex_subestimado":false}},"u":{"2021":{"segmento":"Graneles y carga fraccionada","pct_contenedorizada":0.011720126422072551,"ingreso_por_tm":15.643158288049474,"costo_por_tm":5.216657192580885,"ebitda_por_tm":9.82390340489507,"ingreso_por_recalada":219615.21739130435,"ebitda_por_recalada":137918.35652173913,"ebitda_sobre_activo_fijo":0.25378500310018604,"ebitda_sobre_activo":0.2165847700070326,"nopat_sobre_activo":null,"rotacion_activo":0.34488020701756783},"2022":{"segmento":"Graneles y carga fraccionada","pct_contenedorizada":0.011720126422072551,"ingreso_por_tm":17.487386332377586,"costo_por_tm":5.425039430588558,"ebitda_por_tm":10.982078616733125,"ingreso_por_recalada":238262.71186440677,"ebitda_por_recalada":149628.98305084746,"ebitda_sobre_activo_fijo":0.29399838482736806,"ebitda_sobre_activo":0.25085470115828473,"nopat_sobre_activo":null,"rotacion_activo":0.3994501610800712},"2023":{"segmento":"Graneles y carga fraccionada","pct_contenedorizada":0.011720126422072551,"ingreso_por_tm":17.474064727672193,"costo_por_tm":6.519578659966911,"ebitda_por_tm":11.235823619893221,"ingreso_por_recalada":266116.93548387097,"ebitda_por_recalada":171113.18951612903,"ebitda_sobre_activo_fijo":0.3646650425367363,"ebitda_sobre_activo":0.3243665972368195,"nopat_sobre_activo":null,"rotacion_activo":0.5044581605549292},"2024":{"segmento":"Graneles y carga fraccionada","pct_contenedorizada":0.011720126422072551,"ingreso_por_tm":16.23836899938221,"costo_por_tm":6.65960437193692,"ebitda_por_tm":10.100265517615735,"ingreso_por_recalada":253652.09125475286,"ebitda_por_recalada":157771.60076045626,"ebitda_sobre_activo_fijo":0.3713718244183601,"ebitda_sobre_activo":0.3356421692935519,"nopat_sobre_activo":null,"rotacion_activo":0.5396176355201799},"2025":{"segmento":"Graneles y carga fraccionada","pct_contenedorizada":0.011720126422072551,"ingreso_por_tm":16.839355239326927,"costo_por_tm":7.285129724666282,"ebitda_por_tm":10.053095077878176,"ingreso_por_recalada":262178.107606679,"ebitda_por_recalada":156520.3302411874,"ebitda_sobre_activo_fijo":0.39042978327571604,"ebitda_sobre_activo":0.3513311983608742,"nopat_sobre_activo":null,"rotacion_activo":0.5884944696162047}}},"TPP":{"meta":{"nombre":"Paita (TPE)","terminal":"Terminal Portuario de Paita","operador":"Terminales Portuarios Euroandinos Paita S.A.","tipo":"Multipropósito / Contenedores","inicio":2009,"plazo":30,"modalidad":"Autofinanciada","compromiso_inv":311.64,"inv_acum":292.4,"inv_2025":1.69,"avance_inv":93.8,"segmento":"Multipropósito con contenedores","pct_contenedorizada":0.7483872922550817},"s":[{"anio":2021,"ingresos_totales":62402,"ingresos_servicios":44156,"ingresos_construccion":18246,"costos_totales":37445,"costo_servicios":19272,"utilidad_bruta":24957,"gastos_admin":5048,"gastos_venta":0,"utilidad_operativa":20316,"ingresos_financieros":11041,"gastos_financieros":10428,"uai":20929,"impuesto_renta":9782,"utilidad_neta":11147,"ebitda":null,"dep_amort":null,"efectivo":14613,"ctas_cobrar_com":5081,"inventarios":1684,"activo_corriente":84939,"activo_no_corriente":180255,"activo_total":265194,"intangibles":43217,"ppe":1747,"pasivo_corriente":18464,"pasivo_no_corriente":114409,"pasivo_total":132873,"deuda_financiera":99031,"patrimonio":132321,"margen_bruto":0.3999391045158809,"margen_operativo":0.32556648825358164,"margen_neto":0.17863209512515624,"margen_ebitda":null,"roa":0.04203337933739074,"roe":0.0842421082065583,"roic_aprox":0.04677076452536715,"liquidez_corriente":4.600249133448873,"prueba_acida":4.509044627383016,"capital_trabajo":66475,"apalancamiento":2.004171673430521,"deuda_patrimonio":1.0041716734305213,"endeudamiento_activo":0.5010407475282246,"deuda_neta_ebitda":null,"cobertura_intereses":null,"naves":475,"carga_tm":2962716,"teu":328337,"contenedores":175471,"ingreso_por_tm":14.903892239418155,"costo_por_tm":6.504842178595586,"ebitda_por_tm":null,"ingreso_por_teu":134.48377733852718,"tm_por_nave":6237.296842105263,"ingreso_por_nave":92960.0,"rotacion_activos":0.2353069828125825,"intensidad_capital":4.249767635652703,"dias_cobro":42.00029441072561},{"anio":2022,"ingresos_totales":63518,"ingresos_servicios":50754,"ingresos_construccion":12764,"costos_totales":34099,"costo_servicios":21585,"utilidad_bruta":29419,"gastos_admin":5589,"gastos_venta":0,"utilidad_operativa":24088,"ingresos_financieros":11711,"gastos_financieros":10429,"uai":25370,"impuesto_renta":4109,"utilidad_neta":21261,"ebitda":null,"dep_amort":null,"efectivo":22437,"ctas_cobrar_com":6051,"inventarios":2158,"activo_corriente":89777,"activo_no_corriente":183126,"activo_total":272903,"intangibles":47257,"ppe":1526,"pasivo_corriente":18525,"pasivo_no_corriente":106796,"pasivo_total":125321,"deuda_financiera":97067,"patrimonio":147582,"margen_bruto":0.4631600491199345,"margen_operativo":0.3792310841021443,"margen_neto":0.3347240152397746,"margen_ebitda":null,"roa":0.07790680205054543,"roe":0.14406228401837623,"roic_aprox":0.08251264668894177,"liquidez_corriente":4.846261808367071,"prueba_acida":4.729770580296896,"capital_trabajo":71252,"apalancamiento":1.8491618219024,"deuda_patrimonio":0.8491618219024,"endeudamiento_activo":0.4592144461585252,"deuda_neta_ebitda":null,"cobertura_intereses":null,"naves":540,"carga_tm":2871610,"teu":351503,"contenedores":187828,"ingreso_por_tm":17.674405647006385,"costo_por_tm":7.516689244012941,"ebitda_por_tm":null,"ingreso_por_teu":144.39137077066198,"tm_por_nave":5317.7962962962965,"ingreso_por_nave":93988.88888888889,"rotacion_activos":0.23274936515904918,"intensidad_capital":4.2964671431720145,"dias_cobro":43.51607755053789},{"anio":2023,"ingresos_totales":70348,"ingresos_servicios":47525,"ingresos_construccion":22823,"costos_totales":44369,"costo_servicios":21757,"utilidad_bruta":25979,"gastos_admin":5447,"gastos_venta":0,"utilidad_operativa":20583,"ingresos_financieros":13391,"gastos_financieros":11121,"uai":22853,"impuesto_renta":5780,"utilidad_neta":17073,"ebitda":null,"dep_amort":null,"efectivo":14668,"ctas_cobrar_com":3210,"inventarios":2761,"activo_corriente":85277,"activo_no_corriente":184685,"activo_total":269962,"intangibles":49022,"ppe":1747,"pasivo_corriente":15403,"pasivo_no_corriente":101904,"pasivo_total":117307,"deuda_financiera":95281,"patrimonio":152655,"margen_bruto":0.36929265935065675,"margen_operativo":0.29258827543071586,"margen_neto":0.24269346676522432,"margen_ebitda":null,"roa":0.06324223409220557,"roe":0.1118404244865874,"roic_aprox":0.06202056301270849,"liquidez_corriente":5.5363890151269235,"prueba_acida":5.3571382198273065,"capital_trabajo":69874,"apalancamiento":1.768445186859258,"deuda_patrimonio":0.7684451868592578,"endeudamiento_activo":0.4345315266593076,"deuda_neta_ebitda":null,"cobertura_intereses":null,"naves":541,"carga_tm":2569796,"teu":318946,"contenedores":170787,"ingreso_por_tm":18.493685880124335,"costo_por_tm":8.466430798398004,"ebitda_por_tm":null,"ingreso_por_teu":149.00641487900774,"tm_por_nave":4750.085027726433,"ingreso_por_nave":87846.58040665435,"rotacion_activos":0.26058482304916986,"intensidad_capital":3.837522033320066,"dias_cobro":24.65334034718569},{"anio":2024,"ingresos_totales":49809,"ingresos_servicios":49198,"ingresos_construccion":611,"costos_totales":22088,"costo_servicios":21477,"utilidad_bruta":27721,"gastos_admin":5095,"gastos_venta":0,"utilidad_operativa":23367,"ingresos_financieros":12774,"gastos_financieros":10710,"uai":25431,"impuesto_renta":8383,"utilidad_neta":17048,"ebitda":27693.8,"dep_amort":4326.8,"efectivo":10916,"ctas_cobrar_com":7404,"inventarios":2923,"activo_corriente":91151,"activo_no_corriente":173660,"activo_total":264811,"intangibles":49975,"ppe":1942,"pasivo_corriente":15823,"pasivo_no_corriente":99285,"pasivo_total":115108,"deuda_financiera":93687,"patrimonio":149703,"margen_bruto":0.5565460057419341,"margen_operativo":0.4691320845630308,"margen_neto":0.34226746170370814,"margen_ebitda":0.556,"roa":0.06437799034028042,"roe":0.11387881338383332,"roic_aprox":0.06435913918372417,"liquidez_corriente":5.760664854957972,"prueba_acida":5.575933767300764,"capital_trabajo":75328,"apalancamiento":1.7689091066979286,"deuda_patrimonio":0.7689091066979286,"endeudamiento_activo":0.43467982825486856,"deuda_neta_ebitda":2.9887912834220964,"cobertura_intereses":2.585789355742297,"naves":575,"carga_tm":2617740,"teu":302889,"contenedores":164767,"ingreso_por_tm":18.794074277812157,"costo_por_tm":8.20440532673222,"ebitda_por_tm":10.579279836805796,"ingreso_por_teu":162.42914070831227,"tm_por_nave":4552.591304347826,"ingreso_por_nave":85561.73913043478,"rotacion_activos":0.18809263965620762,"intensidad_capital":5.316529141319842,"dias_cobro":54.93028171876905},{"anio":2025,"ingresos_totales":87350,"ingresos_servicios":78139,"ingresos_construccion":9211,"costos_totales":37412,"costo_servicios":28203,"utilidad_bruta":49938,"gastos_admin":7057,"gastos_venta":0,"utilidad_operativa":42995,"ingresos_financieros":12399,"gastos_financieros":9820,"uai":45574,"impuesto_renta":11583,"utilidad_neta":33991,"ebitda":47081.7,"dep_amort":4086.7,"efectivo":8245,"ctas_cobrar_com":7902,"inventarios":3710,"activo_corriente":111901,"activo_no_corriente":163230,"activo_total":275131,"intangibles":55733,"ppe":2217,"pasivo_corriente":25475,"pasivo_no_corriente":89962,"pasivo_total":115437,"deuda_financiera":90868,"patrimonio":159694,"margen_bruto":0.5717000572409845,"margen_operativo":0.49221522610188895,"margen_neto":0.3891356611333715,"margen_ebitda":0.539,"roa":0.12354478412101871,"roe":0.21285082720703344,"roic_aprox":0.12798219071206868,"liquidez_corriente":4.392580961727184,"prueba_acida":4.246947988223749,"capital_trabajo":86426,"apalancamiento":1.7228637268776534,"deuda_patrimonio":0.7228637268776535,"endeudamiento_activo":0.41957104070424633,"deuda_neta_ebitda":1.7548875198723919,"cobertura_intereses":4.794465376782077,"naves":669,"carga_tm":3366388,"teu":402785,"contenedores":215294,"ingreso_por_tm":23.211525231197353,"costo_por_tm":8.377822164290034,"ebitda_por_tm":13.985806151875542,"ingreso_por_teu":193.99679729880705,"tm_por_nave":5031.970104633781,"ingreso_por_nave":116799.70104633782,"rotacion_activos":0.3174851252675998,"intensidad_capital":3.1497538637664566,"dias_cobro":36.91152945392186}],"m":{"2024":{"anio":2024,"ebit":23367,"dep_amort":4326.804000000004,"ebitda":27693.804000000004,"tasa_impositiva":0.32963705713499275,"origen_tasa":"efectiva","nopat":15664.370885926626,"capital_trabajo":12800,"var_capital_trabajo":12181,"capex":5474.804000000004,"capex_regulador":null,"fcff":2335.370885926626,"fcff_capex_regulador":null,"intereses_netos_dt":-1383.6291140733751,"var_deuda":-1594,"fcfe":2125.0000000000014,"deuda_financiera":93687,"capital_invertido":243390,"capital_invertido_medio":245663.0,"roic":0.06376365543824926,"margen_fcff":0.046886524241133654,"conversion_caja":0.08432828100923317,"capex_sobre_da":1.2653228572405866,"capex_sobre_ingresos":0.10991595896323965,"fcf_yield_capital":0.00950640058098544,"spread":{"8":-0.016236344561750743,"10":-0.03623634456175075,"12":-0.05623634456175074},"eva":{"8":-3988.669114073373,"10":-8901.929114073373,"12":-13815.189114073371},"capex_subestimado":true},"2025":{"anio":2025,"ebit":42995,"dep_amort":4086.6500000000015,"ebitda":47081.65,"tasa_impositiva":0.254158072585246,"origen_tasa":"efectiva","nopat":32067.473669197352,"capital_trabajo":7912,"var_capital_trabajo":-4888,"capex":10119.650000000001,"capex_regulador":1690.0,"fcff":30922.473669197352,"fcff_capex_regulador":39352.12366919735,"intereses_netos_dt":-1923.5263308026508,"var_deuda":-2819,"fcfe":30027.0,"deuda_financiera":90868,"capital_invertido":250562,"capital_invertido_medio":246976.0,"roic":0.12984044469583017,"margen_fcff":0.3540065674779319,"conversion_caja":0.656783984189113,"capex_sobre_da":2.47627029474019,"capex_sobre_ingresos":0.11585174585002864,"fcf_yield_capital":0.12520436669634843,"spread":{"8":0.04984044469583017,"10":0.029840444695830165,"12":0.009840444695830175},"eva":{"8":12309.393669197352,"10":7369.873669197351,"12":2430.353669197353},"capex_subestimado":true}},"u":{"2021":{"segmento":"Multipropósito con contenedores","pct_contenedorizada":0.7483872922550817,"ingreso_por_tm":14.903892239418155,"costo_por_tm":6.504842178595586,"ebitda_por_tm":null,"ingreso_por_teu":134.48377733852718,"costo_por_teu":58.69579121451436,"ebitda_por_teu":null,"ingreso_por_recalada":92960.0,"ebitda_por_recalada":null,"ebitda_sobre_activo_fijo":null,"ebitda_sobre_activo":null,"nopat_sobre_activo":null,"rotacion_activo":0.2353069828125825},"2022":{"segmento":"Multipropósito con contenedores","pct_contenedorizada":0.7483872922550817,"ingreso_por_tm":17.674405647006385,"costo_por_tm":7.516689244012941,"ebitda_por_tm":null,"ingreso_por_teu":144.39137077066198,"costo_por_teu":61.40772624984709,"ebitda_por_teu":null,"ingreso_por_recalada":93988.88888888889,"ebitda_por_recalada":null,"ebitda_sobre_activo_fijo":null,"ebitda_sobre_activo":null,"nopat_sobre_activo":null,"rotacion_activo":0.23274936515904918},"2023":{"segmento":"Multipropósito con contenedores","pct_contenedorizada":0.7483872922550817,"ingreso_por_tm":18.493685880124335,"costo_por_tm":8.466430798398004,"ebitda_por_tm":null,"ingreso_por_teu":149.00641487900774,"costo_por_teu":68.21530917459381,"ebitda_por_teu":null,"ingreso_por_recalada":87846.58040665435,"ebitda_por_recalada":null,"ebitda_sobre_activo_fijo":null,"ebitda_sobre_activo":null,"nopat_sobre_activo":null,"rotacion_activo":0.26058482304916986},"2024":{"segmento":"Multipropósito con contenedores","pct_contenedorizada":0.7483872922550817,"ingreso_por_tm":18.794074277812157,"costo_por_tm":8.20440532673222,"ebitda_por_tm":10.579279836805796,"ingreso_por_teu":162.42914070831227,"costo_por_teu":70.90716401057813,"ebitda_por_teu":91.43218802927807,"ingreso_por_recalada":85561.73913043478,"ebitda_por_recalada":48163.13739130436,"ebitda_sobre_activo_fijo":0.5334245815436177,"ebitda_sobre_activo":0.10457950764885146,"nopat_sobre_activo":null,"rotacion_activo":0.18809263965620762},"2025":{"segmento":"Multipropósito con contenedores","pct_contenedorizada":0.7483872922550817,"ingreso_por_tm":23.211525231197353,"costo_por_tm":8.377822164290034,"ebitda_por_tm":13.985806151875542,"ingreso_por_teu":193.99679729880705,"costo_por_teu":70.01998584852961,"ebitda_por_teu":116.89027645021538,"ingreso_por_recalada":116799.70104633782,"ebitda_por_recalada":70376.15844544096,"ebitda_sobre_activo_fijo":0.8124529767040553,"ebitda_sobre_activo":0.1711244825192363,"nopat_sobre_activo":null,"rotacion_activo":0.3174851252675998}}},"TPGSM":{"meta":{"nombre":"Paracas (TPGSM)","terminal":"Terminal Portuario General San Martín - Pisco","operador":"Terminal Portuario Paracas S.A.","tipo":"Multipropósito / Graneles","inicio":2014,"plazo":30,"modalidad":"Autofinanciada","compromiso_inv":249.1,"inv_acum":195.78,"inv_2025":10.02,"avance_inv":78.6,"segmento":"Graneles y carga fraccionada","pct_contenedorizada":0.14994596821150966},"s":[{"anio":2021,"ingresos_totales":21757,"ingresos_servicios":20430,"ingresos_construccion":1327,"costos_totales":16772,"costo_servicios":15445,"utilidad_bruta":4985,"gastos_admin":5901,"gastos_venta":211,"utilidad_operativa":-1127,"ingresos_financieros":0,"gastos_financieros":8639,"uai":-9399,"impuesto_renta":-8185,"utilidad_neta":-1214,"ebitda":null,"dep_amort":null,"efectivo":7694,"ctas_cobrar_com":836,"inventarios":1001,"activo_corriente":10818,"activo_no_corriente":201509,"activo_total":212327,"intangibles":194600,"ppe":1583,"pasivo_corriente":4556,"pasivo_no_corriente":186149,"pasivo_total":190705,"deuda_financiera":178583,"patrimonio":21622,"margen_bruto":0.22912166199384107,"margen_operativo":-0.05179942087603989,"margen_neto":-0.05579813393390633,"margen_ebitda":null,"roa":-0.0057175959722503495,"roe":-0.05614651743594487,"roic_aprox":-0.0007270864206405691,"liquidez_corriente":2.374451273046532,"prueba_acida":2.154741000877963,"capital_trabajo":6262,"apalancamiento":9.819951900841735,"deuda_patrimonio":8.819951900841735,"endeudamiento_activo":0.8981665073212545,"deuda_neta_ebitda":null,"cobertura_intereses":null,"naves":167,"carga_tm":2179173,"teu":17379,"contenedores":8855,"ingreso_por_tm":9.375116156450176,"costo_por_tm":7.087551103101957,"ebitda_por_tm":null,"ingreso_por_teu":1175.5567063697565,"tm_por_nave":13048.940119760478,"ingreso_por_nave":122335.32934131737,"rotacion_activos":0.10246930442195293,"intensidad_capital":9.759020085489727,"dias_cobro":14.935878609887421},{"anio":2022,"ingresos_totales":34990,"ingresos_servicios":34867,"ingresos_construccion":123,"costos_totales":24843,"costo_servicios":24720,"utilidad_bruta":10147,"gastos_admin":5359,"gastos_venta":287,"utilidad_operativa":4501,"ingresos_financieros":46,"gastos_financieros":8391,"uai":-3654,"impuesto_renta":-10646,"utilidad_neta":6992,"ebitda":null,"dep_amort":null,"efectivo":9112,"ctas_cobrar_com":2918,"inventarios":1055,"activo_corriente":14032,"activo_no_corriente":196441,"activo_total":210473,"intangibles":186506,"ppe":1698,"pasivo_corriente":5208,"pasivo_no_corriente":145582,"pasivo_total":150790,"deuda_financiera":146549,"patrimonio":59683,"margen_bruto":0.289997142040583,"margen_operativo":0.12863675335810232,"margen_neto":0.19982852243498142,"margen_ebitda":null,"roa":0.03322041306960988,"roe":0.11715228792118358,"roic_aprox":-0.041762437244726364,"liquidez_corriente":2.69431643625192,"prueba_acida":2.4917434715821813,"capital_trabajo":8824,"apalancamiento":3.526515088048523,"deuda_patrimonio":2.526515088048523,"endeudamiento_activo":0.7164339368945185,"deuda_neta_ebitda":null,"cobertura_intereses":null,"naves":209,"carga_tm":2848717,"teu":13541,"contenedores":6834,"ingreso_por_tm":12.239545030271522,"costo_por_tm":8.677590648702557,"ebitda_por_tm":null,"ingreso_por_teu":2574.9206114762574,"tm_por_nave":13630.224880382775,"ingreso_por_nave":166827.75119617226,"rotacion_activos":0.16624460144531603,"intensidad_capital":6.0152329236924835,"dias_cobro":30.546648693607136},{"anio":2023,"ingresos_totales":32847,"ingresos_servicios":32847,"ingresos_construccion":0,"costos_totales":26162,"costo_servicios":26162,"utilidad_bruta":6685,"gastos_admin":5551,"gastos_venta":256,"utilidad_operativa":878,"ingresos_financieros":2094,"gastos_financieros":6382,"uai":-4160,"impuesto_renta":-408,"utilidad_neta":-3752,"ebitda":null,"dep_amort":null,"efectivo":3117,"ctas_cobrar_com":2240,"inventarios":1672,"activo_corriente":9783,"activo_no_corriente":192055,"activo_total":201838,"intangibles":181197,"ppe":2010,"pasivo_corriente":8103,"pasivo_no_corriente":137805,"pasivo_total":145908,"deuda_financiera":139622,"patrimonio":55930,"margen_bruto":0.20351934727676804,"margen_operativo":0.026729990562304014,"margen_neto":-0.11422656559198709,"margen_ebitda":null,"roa":-0.018589165568426165,"roe":-0.06708385481852315,"roic_aprox":0.004049503260199137,"liquidez_corriente":1.2073306182895225,"prueba_acida":1.0009872886585216,"capital_trabajo":1680,"apalancamiento":3.6087609511889864,"deuda_patrimonio":2.6087609511889864,"endeudamiento_activo":0.7228965804258861,"deuda_neta_ebitda":null,"cobertura_intereses":null,"naves":228,"carga_tm":2556831,"teu":28228,"contenedores":14178,"ingreso_por_tm":12.846762261565196,"costo_por_tm":10.23219759147163,"ebitda_por_tm":null,"ingreso_por_teu":1163.6318548958482,"tm_por_nave":11214.171052631578,"ingreso_por_nave":144065.7894736842,"rotacion_activos":0.16273942468712532,"intensidad_capital":6.1447925229092455,"dias_cobro":24.891162054373307},{"anio":2024,"ingresos_totales":43860,"ingresos_servicios":43860,"ingresos_construccion":0,"costos_totales":33083,"costo_servicios":33083,"utilidad_bruta":10777,"gastos_admin":6503,"gastos_venta":368,"utilidad_operativa":3906,"ingresos_financieros":2048,"gastos_financieros":9163,"uai":-3993,"impuesto_renta":-927,"utilidad_neta":-3066,"ebitda":14166.8,"dep_amort":10260.8,"efectivo":5391,"ctas_cobrar_com":3025,"inventarios":2151,"activo_corriente":12905,"activo_no_corriente":190485,"activo_total":203390,"intangibles":178016,"ppe":2728,"pasivo_corriente":11693,"pasivo_no_corriente":136481,"pasivo_total":148174,"deuda_financiera":137367,"patrimonio":55216,"margen_bruto":0.24571363429092566,"margen_operativo":0.0890560875512996,"margen_neto":-0.06990424076607388,"margen_ebitda":0.323,"roa":-0.015074487437927135,"roe":-0.05552738336713996,"roic_aprox":0.015573532429096218,"liquidez_corriente":1.1036517574617293,"prueba_acida":0.9196955443427692,"capital_trabajo":1212,"apalancamiento":3.6835337583309187,"deuda_patrimonio":2.6835337583309187,"endeudamiento_activo":0.728521559565367,"deuda_neta_ebitda":9.315878414149157,"cobertura_intereses":1.5460853432282005,"naves":360,"carga_tm":3779159,"teu":77497,"contenedores":39044,"ingreso_por_tm":11.605756730531846,"costo_por_tm":8.754064065576495,"ebitda_por_tm":3.748659423961786,"ingreso_por_teu":565.9573918990412,"tm_por_nave":10497.663888888888,"ingreso_por_nave":121833.33333333333,"rotacion_activos":0.2156448202959831,"intensidad_capital":4.637254901960785,"dias_cobro":25.173848609211127},{"anio":2025,"ingresos_totales":57302,"ingresos_servicios":57302,"ingresos_construccion":0,"costos_totales":42288,"costo_servicios":42288,"utilidad_bruta":15014,"gastos_admin":7301,"gastos_venta":407,"utilidad_operativa":7306,"ingresos_financieros":1233,"gastos_financieros":10028,"uai":-1883,"impuesto_renta":-1448,"utilidad_neta":-435,"ebitda":18680.5,"dep_amort":11374.5,"efectivo":12750,"ctas_cobrar_com":3845,"inventarios":3026,"activo_corriente":20683,"activo_no_corriente":184770,"activo_total":205453,"intangibles":169323,"ppe":2290,"pasivo_corriente":12380,"pasivo_no_corriente":136573,"pasivo_total":148953,"deuda_financiera":137636,"patrimonio":56500,"margen_bruto":0.2620152874245227,"margen_operativo":0.1274999127430107,"margen_neto":-0.007591358067781229,"margen_ebitda":0.326,"roa":-0.0021172725635546816,"roe":-0.007699115044247788,"roic_aprox":0.00869385770504413,"liquidez_corriente":1.6706785137318256,"prueba_acida":1.4262520193861066,"capital_trabajo":8303,"apalancamiento":3.6363362831858406,"deuda_patrimonio":2.6363362831858406,"endeudamiento_activo":0.724997931400369,"deuda_neta_ebitda":6.685384272286345,"cobertura_intereses":1.8628292780215399,"naves":385,"carga_tm":3932870,"teu":89399,"contenedores":45065,"ingreso_por_tm":14.57002138387488,"costo_por_tm":10.75245304319746,"ebitda_por_tm":4.749826971143211,"ingreso_por_teu":640.9691383572523,"tm_por_nave":10215.246753246753,"ingreso_por_nave":148836.36363636365,"rotacion_activos":0.27890563778577093,"intensidad_capital":3.585442043907717,"dias_cobro":24.491728037415797}],"m":{"2024":{"anio":2024,"ebit":3906,"dep_amort":10260.78,"ebitda":14166.78,"tasa_impositiva":0.295,"origen_tasa":"legal","nopat":2753.7300000000005,"capital_trabajo":-3269,"var_capital_trabajo":-3720,"capex":7797.780000000001,"capex_regulador":null,"fcff":8936.730000000001,"fcff_capex_regulador":null,"intereses_netos_dt":5016.075000000001,"var_deuda":-2255,"fcfe":1665.6550000000007,"deuda_financiera":137367,"capital_invertido":192583,"capital_invertido_medio":194067.5,"roic":0.014189547451273399,"margen_fcff":0.2037558139534884,"conversion_caja":0.6308229534163727,"capex_sobre_da":0.7599597691403578,"capex_sobre_ingresos":0.17778796169630645,"fcf_yield_capital":0.046049596145670973,"spread":{"8":-0.0658104525487266,"10":-0.0858104525487266,"12":-0.10581045254872659},"eva":{"8":-12771.669999999998,"10":-16653.02,"12":-20534.37},"capex_subestimado":false},"2025":{"anio":2025,"ebit":7306,"dep_amort":11374.452000000001,"ebitda":18680.452,"tasa_impositiva":0.295,"origen_tasa":"legal","nopat":5150.7300000000005,"capital_trabajo":-3367,"var_capital_trabajo":-98,"capex":2243.452000000001,"capex_regulador":10020.0,"fcff":14379.73,"fcff_capex_regulador":6603.182000000001,"intereses_netos_dt":6200.475,"var_deuda":269,"fcfe":8448.255,"deuda_financiera":137636,"capital_invertido":194136,"capital_invertido_medio":193359.5,"roic":0.026638101567287877,"margen_fcff":0.2509463893057834,"conversion_caja":0.7697742003244888,"capex_sobre_da":0.1972360514598858,"capex_sobre_ingresos":0.03915137342501136,"fcf_yield_capital":0.07436784848947169,"spread":{"8":-0.05336189843271212,"10":-0.07336189843271212,"12":-0.09336189843271211},"eva":{"8":-10318.029999999999,"10":-14185.22,"12":-18052.41},"capex_subestimado":false}},"u":{"2021":{"segmento":"Graneles y carga fraccionada","pct_contenedorizada":0.14994596821150966,"ingreso_por_tm":9.375116156450176,"costo_por_tm":7.087551103101957,"ebitda_por_tm":null,"ingreso_por_recalada":122335.32934131737,"ebitda_por_recalada":null,"ebitda_sobre_activo_fijo":null,"ebitda_sobre_activo":null,"nopat_sobre_activo":null,"rotacion_activo":0.10246930442195293},"2022":{"segmento":"Graneles y carga fraccionada","pct_contenedorizada":0.14994596821150966,"ingreso_por_tm":12.239545030271522,"costo_por_tm":8.677590648702557,"ebitda_por_tm":null,"ingreso_por_recalada":166827.75119617226,"ebitda_por_recalada":null,"ebitda_sobre_activo_fijo":null,"ebitda_sobre_activo":null,"nopat_sobre_activo":null,"rotacion_activo":0.16624460144531603},"2023":{"segmento":"Graneles y carga fraccionada","pct_contenedorizada":0.14994596821150966,"ingreso_por_tm":12.846762261565196,"costo_por_tm":10.23219759147163,"ebitda_por_tm":null,"ingreso_por_recalada":144065.7894736842,"ebitda_por_recalada":null,"ebitda_sobre_activo_fijo":null,"ebitda_sobre_activo":null,"nopat_sobre_activo":null,"rotacion_activo":0.16273942468712532},"2024":{"segmento":"Graneles y carga fraccionada","pct_contenedorizada":0.14994596821150966,"ingreso_por_tm":11.605756730531846,"costo_por_tm":8.754064065576495,"ebitda_por_tm":3.748659423961786,"ingreso_por_recalada":121833.33333333333,"ebitda_por_recalada":39352.166666666664,"ebitda_sobre_activo_fijo":0.0783803611738149,"ebitda_sobre_activo":0.06965327695560254,"nopat_sobre_activo":null,"rotacion_activo":0.2156448202959831},"2025":{"segmento":"Graneles y carga fraccionada","pct_contenedorizada":0.14994596821150966,"ingreso_por_tm":14.57002138387488,"costo_por_tm":10.75245304319746,"ebitda_por_tm":4.749826971143211,"ingreso_por_recalada":148836.36363636365,"ebitda_por_recalada":48520.65454545455,"ebitda_sobre_activo_fijo":0.10885219651191927,"ebitda_sobre_activo":0.09092323791816134,"nopat_sobre_activo":null,"rotacion_activo":0.27890563778577093}}},"STI":{"meta":{"nombre":"Salaverry (STI)","terminal":"Terminal Portuario Multipropósito de Salaverry","operador":"Salaverry Terminal Internacional S.A.","tipo":"Multipropósito / Graneles","inicio":2018,"plazo":30,"modalidad":"Autofinanciada","compromiso_inv":270.19,"inv_acum":149.69,"inv_2025":9.46,"avance_inv":55.4,"segmento":"Graneles y carga fraccionada","pct_contenedorizada":0.0023817530588883026},"s":[{"anio":2021,"ingresos_totales":41477,"ingresos_servicios":41477,"ingresos_construccion":0,"costos_totales":22195,"costo_servicios":22195,"utilidad_bruta":19282,"gastos_admin":4411,"gastos_venta":0,"utilidad_operativa":17396,"ingresos_financieros":1,"gastos_financieros":2558,"uai":14821,"impuesto_renta":5082,"utilidad_neta":9739,"ebitda":null,"dep_amort":null,"efectivo":1776,"ctas_cobrar_com":1528,"inventarios":715,"activo_corriente":36329,"activo_no_corriente":149556,"activo_total":185885,"intangibles":143872,"ppe":1745,"pasivo_corriente":7913,"pasivo_no_corriente":142207,"pasivo_total":150120,"deuda_financiera":134798,"patrimonio":35765,"margen_bruto":0.4648841526629216,"margen_operativo":0.41941316874412327,"margen_neto":0.23480483159341323,"margen_ebitda":null,"roa":0.05239260833310918,"roe":0.2723053264364602,"roic_aprox":0.06701953826540102,"liquidez_corriente":4.591052698091747,"prueba_acida":4.500695058764059,"capital_trabajo":28416,"apalancamiento":5.19739969243674,"deuda_patrimonio":4.19739969243674,"endeudamiento_activo":0.8075960943594158,"deuda_neta_ebitda":null,"cobertura_intereses":null,"naves":215,"carga_tm":3669186,"teu":22,"contenedores":11,"ingreso_por_tm":11.304142117624998,"costo_por_tm":6.0490255876916565,"ebitda_por_tm":null,"ingreso_por_teu":1885318.1818181819,"tm_por_nave":17065.981395348837,"ingreso_por_nave":192916.27906976745,"rotacion_activos":0.22313258197272506,"intensidad_capital":4.481640427224727,"dias_cobro":13.446488415266293},{"anio":2022,"ingresos_totales":45182,"ingresos_servicios":45182,"ingresos_construccion":0,"costos_totales":29008,"costo_servicios":29008,"utilidad_bruta":16174,"gastos_admin":4676,"gastos_venta":0,"utilidad_operativa":11576,"ingresos_financieros":10591,"gastos_financieros":11015,"uai":11154,"impuesto_renta":2917,"utilidad_neta":8237,"ebitda":null,"dep_amort":null,"efectivo":6635,"ctas_cobrar_com":2776,"inventarios":323,"activo_corriente":32095,"activo_no_corriente":155415,"activo_total":187510,"intangibles":152775,"ppe":2118,"pasivo_corriente":13696,"pasivo_no_corriente":154333,"pasivo_total":168029,"deuda_financiera":150165,"patrimonio":19481,"margen_bruto":0.35797441458988094,"margen_operativo":0.25620822451418707,"margen_neto":0.18230711345225975,"margen_ebitda":null,"roa":0.04392832382272945,"roe":0.4228222370514861,"roic_aprox":0.05039103978887184,"liquidez_corriente":2.343384929906542,"prueba_acida":2.319801401869159,"capital_trabajo":18399,"apalancamiento":9.62527590986089,"deuda_patrimonio":8.62527590986089,"endeudamiento_activo":0.8961068743000373,"deuda_neta_ebitda":null,"cobertura_intereses":null,"naves":219,"carga_tm":3521159,"teu":0,"contenedores":0,"ingreso_por_tm":12.831570514140372,"costo_por_tm":8.238196571072196,"ebitda_por_tm":null,"ingreso_por_teu":null,"tm_por_nave":16078.351598173516,"ingreso_por_nave":206310.50228310502,"rotacion_activos":0.2409578155831689,"intensidad_capital":4.1501040237262625,"dias_cobro":22.425744765614624},{"anio":2023,"ingresos_totales":45910,"ingresos_servicios":45910,"ingresos_construccion":0,"costos_totales":26392,"costo_servicios":26392,"utilidad_bruta":19518,"gastos_admin":4608,"gastos_venta":0,"utilidad_operativa":15023,"ingresos_financieros":199,"gastos_financieros":10683,"uai":4450,"impuesto_renta":1470,"utilidad_neta":2980,"ebitda":null,"dep_amort":null,"efectivo":3388,"ctas_cobrar_com":2538,"inventarios":446,"activo_corriente":22100,"activo_no_corriente":150798,"activo_total":172898,"intangibles":148608,"ppe":2149,"pasivo_corriente":8031,"pasivo_no_corriente":129293,"pasivo_total":137324,"deuda_financiera":127298,"patrimonio":35574,"margen_bruto":0.4251361359181006,"margen_operativo":0.3272271836201263,"margen_neto":0.06490960575038118,"margen_ebitda":null,"roa":0.017235595553447697,"roe":0.08376904480800584,"roic_aprox":0.061768419786186274,"liquidez_corriente":2.7518366330469433,"prueba_acida":2.6963018304071724,"capital_trabajo":14069,"apalancamiento":4.8602350030921455,"deuda_patrimonio":3.860235003092146,"endeudamiento_activo":0.7942486321414939,"deuda_neta_ebitda":null,"cobertura_intereses":null,"naves":216,"carga_tm":3270937,"teu":0,"contenedores":0,"ingreso_por_tm":14.035733491656977,"costo_por_tm":8.06863599023766,"ebitda_por_tm":null,"ingreso_por_teu":null,"tm_por_nave":15143.226851851852,"ingreso_por_nave":212546.2962962963,"rotacion_activos":0.26553227914724287,"intensidad_capital":3.7660204748420822,"dias_cobro":20.177956872141145},{"anio":2024,"ingresos_totales":56318,"ingresos_servicios":56318,"ingresos_construccion":0,"costos_totales":29453,"costo_servicios":29453,"utilidad_bruta":26865,"gastos_admin":5234,"gastos_venta":0,"utilidad_operativa":21289,"ingresos_financieros":26,"gastos_financieros":10063,"uai":11340,"impuesto_renta":3569,"utilidad_neta":7771,"ebitda":33227.6,"dep_amort":11938.6,"efectivo":3928,"ctas_cobrar_com":3251,"inventarios":277,"activo_corriente":13731,"activo_no_corriente":151243,"activo_total":164974,"intangibles":142746,"ppe":7995,"pasivo_corriente":9582,"pasivo_no_corriente":119087,"pasivo_total":128669,"deuda_financiera":116552,"patrimonio":36305,"margen_bruto":0.47702333179445294,"margen_operativo":0.3780141340246458,"margen_neto":0.13798430341986576,"margen_ebitda":0.59,"roa":0.0471043922072569,"roe":0.21404765183858973,"roic_aprox":0.09544073705664823,"liquidez_corriente":1.4329993738259237,"prueba_acida":1.4040910039657692,"capital_trabajo":4149,"apalancamiento":4.544112381214709,"deuda_patrimonio":3.544112381214709,"endeudamiento_activo":0.7799350200637676,"deuda_neta_ebitda":3.3894693631382573,"cobertura_intereses":3.301959654178674,"naves":256,"carga_tm":3949519,"teu":10244,"contenedores":5212,"ingreso_por_tm":14.259457923863641,"costo_por_tm":7.457363795439394,"ebitda_por_tm":8.413080175079546,"ingreso_por_teu":5497.657165169856,"tm_por_nave":15427.80859375,"ingreso_por_nave":219992.1875,"rotacion_activos":0.3413750045461709,"intensidad_capital":2.929329876771192,"dias_cobro":21.069906601796937},{"anio":2025,"ingresos_totales":64851,"ingresos_servicios":64851,"ingresos_construccion":0,"costos_totales":34814,"costo_servicios":34814,"utilidad_bruta":30037,"gastos_admin":6564,"gastos_venta":0,"utilidad_operativa":23705,"ingresos_financieros":145,"gastos_financieros":9895,"uai":13306,"impuesto_renta":3255,"utilidad_neta":10051,"ebitda":36316.6,"dep_amort":12611.6,"efectivo":685,"ctas_cobrar_com":2560,"inventarios":487,"activo_corriente":11368,"activo_no_corriente":152868,"activo_total":164236,"intangibles":141725,"ppe":7915,"pasivo_corriente":16708,"pasivo_no_corriente":111172,"pasivo_total":127880,"deuda_financiera":111760,"patrimonio":36356,"margen_bruto":0.4631694191300057,"margen_operativo":0.3655302154168787,"margen_neto":0.15498604493377127,"margen_ebitda":0.56,"roa":0.06119851920407219,"roe":0.27646055671691055,"roic_aprox":0.12089260572685714,"liquidez_corriente":0.6803926262868087,"prueba_acida":0.6512449126167106,"capital_trabajo":-5340,"apalancamiento":4.517438662119045,"deuda_patrimonio":3.517438662119045,"endeudamiento_activo":0.7786356219099345,"deuda_neta_ebitda":3.0585220626623224,"cobertura_intereses":3.6701930267812033,"naves":225,"carga_tm":4106639,"teu":2932,"contenedores":1472,"ingreso_por_tm":15.791745999587498,"costo_por_tm":8.477492177909966,"ebitda_por_tm":8.843377759769,"ingreso_por_teu":22118.349249658935,"tm_por_nave":18251.72888888889,"ingreso_por_nave":288226.6666666667,"rotacion_activos":0.39486470688521397,"intensidad_capital":2.532512991318561,"dias_cobro":14.408413131640222}],"m":{"2024":{"anio":2024,"ebit":21289,"dep_amort":11938.619999999995,"ebitda":33227.619999999995,"tasa_impositiva":0.31472663139329804,"origen_tasa":"efectiva","nopat":14588.784744268078,"capital_trabajo":-2233,"var_capital_trabajo":-699,"capex":11922.619999999995,"capex_regulador":null,"fcff":15303.78474426808,"fcff_capex_regulador":null,"intereses_netos_dt":6878.088800705467,"var_deuda":-10746,"fcfe":-2320.3040564373878,"deuda_financiera":116552,"capital_invertido":152857,"capital_invertido_medio":157864.5,"roic":0.09241333386713338,"margen_fcff":0.27173878234788307,"conversion_caja":0.46057420736929344,"capex_sobre_da":0.9986598116030161,"capex_sobre_ingresos":0.2117017649774494,"fcf_yield_capital":0.09694253454239604,"spread":{"8":0.012413333867133378,"10":-0.007586666132866626,"12":-0.027586666132866616},"eva":{"8":1959.6247442680772,"10":-1197.6652557319235,"12":-4354.955255731922},"capex_subestimado":false},"2025":{"anio":2025,"ebit":23705,"dep_amort":12611.560000000005,"ebitda":36316.560000000005,"tasa_impositiva":0.24462648429280023,"origen_tasa":"efectiva","nopat":17906.129189839172,"capital_trabajo":-7668,"var_capital_trabajo":-5435,"capex":11510.560000000005,"capex_regulador":9460.0,"fcff":24442.129189839172,"fcff_capex_regulador":26492.689189839177,"intereses_netos_dt":7364.891778145198,"var_deuda":-4792,"fcfe":12285.237411693975,"deuda_financiera":111760,"capital_invertido":148116,"capital_invertido_medio":150486.5,"roic":0.11898827595723983,"margen_fcff":0.3768967200172576,"conversion_caja":0.6730298571736741,"capex_sobre_da":0.9126991426913087,"capex_sobre_ingresos":0.17749240566837837,"fcf_yield_capital":0.162420743321422,"spread":{"8":0.03898827595723983,"10":0.018988275957239828,"12":-0.001011724042760162},"eva":{"8":5867.209189839172,"10":2857.4791898391713,"12":-152.25081016082711},"capex_subestimado":false}},"u":{"2021":{"segmento":"Graneles y carga fraccionada","pct_contenedorizada":0.0023817530588883026,"ingreso_por_tm":11.304142117624998,"costo_por_tm":6.0490255876916565,"ebitda_por_tm":null,"ingreso_por_recalada":192916.27906976745,"ebitda_por_recalada":null,"ebitda_sobre_activo_fijo":null,"ebitda_sobre_activo":null,"nopat_sobre_activo":null,"rotacion_activo":0.22313258197272506},"2022":{"segmento":"Graneles y carga fraccionada","pct_contenedorizada":0.0023817530588883026,"ingreso_por_tm":12.831570514140372,"costo_por_tm":8.238196571072196,"ebitda_por_tm":null,"ingreso_por_recalada":206310.50228310502,"ebitda_por_recalada":null,"ebitda_sobre_activo_fijo":null,"ebitda_sobre_activo":null,"nopat_sobre_activo":null,"rotacion_activo":0.2409578155831689},"2023":{"segmento":"Graneles y carga fraccionada","pct_contenedorizada":0.0023817530588883026,"ingreso_por_tm":14.035733491656977,"costo_por_tm":8.06863599023766,"ebitda_por_tm":null,"ingreso_por_recalada":212546.2962962963,"ebitda_por_recalada":null,"ebitda_sobre_activo_fijo":null,"ebitda_sobre_activo":null,"nopat_sobre_activo":null,"rotacion_activo":0.26553227914724287},"2024":{"segmento":"Graneles y carga fraccionada","pct_contenedorizada":0.0023817530588883026,"ingreso_por_tm":14.259457923863641,"costo_por_tm":7.457363795439394,"ebitda_por_tm":8.413080175079546,"ingreso_por_recalada":219992.1875,"ebitda_por_recalada":129795.39062499999,"ebitda_sobre_activo_fijo":0.2204285496314871,"ebitda_sobre_activo":0.2014112526822408,"nopat_sobre_activo":null,"rotacion_activo":0.3413750045461709},"2025":{"segmento":"Graneles y carga fraccionada","pct_contenedorizada":0.0023817530588883026,"ingreso_por_tm":15.791745999587498,"costo_por_tm":8.477492177909966,"ebitda_por_tm":8.843377759769,"ingreso_por_recalada":288226.6666666667,"ebitda_por_recalada":161406.93333333338,"ebitda_sobre_activo_fijo":0.24269286287089017,"ebitda_sobre_activo":0.22112423585571986,"nopat_sobre_activo":null,"rotacion_activo":0.39486470688521397}}},"TCSA":{"meta":{"nombre":"Transportadora Callao","terminal":"Terminal de Embarque de Concentrados de Minerales - Callao","operador":"Transportadora Callao S.A.","tipo":"Especializado / Concentrados","inicio":2014,"plazo":20,"modalidad":"Autofinanciada","compromiso_inv":113.2,"inv_acum":113.2,"inv_2025":0.0,"avance_inv":100.0,"segmento":"Granel mineral especializado","pct_contenedorizada":0.0},"s":[{"anio":2021,"ingresos_totales":25476,"ingresos_servicios":25406,"ingresos_construccion":0,"costos_totales":18870,"costo_servicios":18870,"utilidad_bruta":6606,"gastos_admin":1068,"gastos_venta":0,"utilidad_operativa":5397,"ingresos_financieros":20,"gastos_financieros":5126,"uai":434,"impuesto_renta":432,"utilidad_neta":2,"ebitda":null,"dep_amort":null,"efectivo":1137,"ctas_cobrar_com":4644,"inventarios":148,"activo_corriente":7272,"activo_no_corriente":92252,"activo_total":99524,"intangibles":78489,"ppe":1323,"pasivo_corriente":12936,"pasivo_no_corriente":66091,"pasivo_total":79027,"deuda_financiera":77635,"patrimonio":20497,"margen_bruto":0.2593028732925106,"margen_operativo":0.2118464437117287,"margen_neto":7.85052598524101e-05,"margen_ebitda":null,"roa":2.0095655319319964e-05,"roe":9.757525491535346e-05,"roic_aprox":0.000253444011555205,"liquidez_corriente":0.562152133580705,"prueba_acida":0.5507111935683364,"capital_trabajo":-5664,"apalancamiento":4.85553983509782,"deuda_patrimonio":3.855539835097819,"endeudamiento_activo":0.7940496764599494,"deuda_neta_ebitda":null,"cobertura_intereses":null,"naves":167,"carga_tm":3069340,"teu":0,"contenedores":0,"ingreso_por_tm":8.277349527911538,"costo_por_tm":6.147901503254771,"ebitda_por_tm":null,"ingreso_por_teu":null,"tm_por_nave":18379.28143712575,"ingreso_por_nave":152131.7365269461,"rotacion_activos":0.2559784574574977,"intensidad_capital":3.906578740775632,"dias_cobro":66.7188853026844},{"anio":2022,"ingresos_totales":27538,"ingresos_servicios":27397,"ingresos_construccion":0,"costos_totales":19617,"costo_servicios":19617,"utilidad_bruta":7921,"gastos_admin":1299,"gastos_venta":0,"utilidad_operativa":6556,"ingresos_financieros":83,"gastos_financieros":4604,"uai":1973,"impuesto_renta":2495,"utilidad_neta":-522,"ebitda":null,"dep_amort":null,"efectivo":1364,"ctas_cobrar_com":5452,"inventarios":429,"activo_corriente":7764,"activo_no_corriente":82996,"activo_total":90760,"intangibles":70034,"ppe":1246,"pasivo_corriente":18707,"pasivo_no_corriente":52078,"pasivo_total":70785,"deuda_financiera":67946,"patrimonio":19975,"margen_bruto":0.2876388989759605,"margen_operativo":0.23807102912339312,"margen_neto":-0.018955624954608178,"margen_ebitda":null,"roa":-0.005751432349052446,"roe":-0.026132665832290364,"roic_aprox":-0.019728303641799148,"liquidez_corriente":0.41503180627572567,"prueba_acida":0.39209921419789384,"capital_trabajo":-10943,"apalancamiento":4.543679599499375,"deuda_patrimonio":3.543679599499374,"endeudamiento_activo":0.7799140590568533,"deuda_neta_ebitda":null,"cobertura_intereses":null,"naves":164,"carga_tm":3152188,"teu":0,"contenedores":0,"ingreso_por_tm":8.691423227294818,"costo_por_tm":6.223296326234349,"ebitda_por_tm":null,"ingreso_por_teu":null,"tm_por_nave":19220.658536585364,"ingreso_por_nave":167054.8780487805,"rotacion_activos":0.303415601586602,"intensidad_capital":3.295809426973636,"dias_cobro":72.6349600321203},{"anio":2023,"ingresos_totales":26216,"ingresos_servicios":26045,"ingresos_construccion":0,"costos_totales":19933,"costo_servicios":19933,"utilidad_bruta":6283,"gastos_admin":1433,"gastos_venta":0,"utilidad_operativa":4793,"ingresos_financieros":299,"gastos_financieros":3993,"uai":1089,"impuesto_renta":866,"utilidad_neta":223,"ebitda":null,"dep_amort":null,"efectivo":496,"ctas_cobrar_com":8273,"inventarios":843,"activo_corriente":10016,"activo_no_corriente":74788,"activo_total":84804,"intangibles":62172,"ppe":1128,"pasivo_corriente":12839,"pasivo_no_corriente":50098,"pasivo_total":62937,"deuda_financiera":60412,"patrimonio":21867,"margen_bruto":0.2396628013426915,"margen_operativo":0.1828272810497406,"margen_neto":0.008506255721696674,"margen_ebitda":null,"roa":0.0026295929437290693,"roe":0.010198015274157406,"roic_aprox":0.011928762928962914,"liquidez_corriente":0.7801230625438118,"prueba_acida":0.7144637432821871,"capital_trabajo":-2823,"apalancamiento":3.8781725888324874,"deuda_patrimonio":2.8781725888324874,"endeudamiento_activo":0.7421465968586387,"deuda_neta_ebitda":null,"cobertura_intereses":null,"naves":136,"carga_tm":2864950,"teu":0,"contenedores":0,"ingreso_por_tm":9.090909090909092,"costo_por_tm":6.957538525977766,"ebitda_por_tm":null,"ingreso_por_teu":null,"tm_por_nave":21065.808823529413,"ingreso_por_nave":191507.35294117648,"rotacion_activos":0.30913636149238244,"intensidad_capital":3.2348184314922186,"dias_cobro":115.93952774044922},{"anio":2024,"ingresos_totales":27787,"ingresos_servicios":27637,"ingresos_construccion":0,"costos_totales":20837,"costo_servicios":20837,"utilidad_bruta":6950,"gastos_admin":1460,"gastos_venta":0,"utilidad_operativa":5392,"ingresos_financieros":381,"gastos_financieros":3746,"uai":1955,"impuesto_renta":882,"utilidad_neta":1073,"ebitda":14810.5,"dep_amort":9418.5,"efectivo":2448,"ctas_cobrar_com":7183,"inventarios":956,"activo_corriente":11160,"activo_no_corriente":68154,"activo_total":79314,"intangibles":54494,"ppe":1047,"pasivo_corriente":14934,"pasivo_no_corriente":40742,"pasivo_total":55676,"deuda_financiera":52833,"patrimonio":23638,"margen_bruto":0.2501169611688919,"margen_operativo":0.19404757620470003,"margen_neto":0.03861517976031957,"margen_ebitda":0.533,"roa":0.013528506947071134,"roe":0.04539301125306709,"roic_aprox":0.0386995641929821,"liquidez_corriente":0.7472880674969867,"prueba_acida":0.6832730681665997,"capital_trabajo":-3774,"apalancamiento":3.355360013537524,"deuda_patrimonio":2.355360013537524,"endeudamiento_activo":0.7019693874977936,"deuda_neta_ebitda":3.401984987513226,"cobertura_intereses":3.9536761879337963,"naves":148,"carga_tm":2906268,"teu":0,"contenedores":0,"ingreso_por_tm":9.509446479127183,"costo_por_tm":7.1696760243721505,"ebitda_por_tm":5.096044480412681,"ingreso_por_teu":null,"tm_por_nave":19636.945945945947,"ingreso_por_nave":186736.48648648648,"rotacion_activos":0.350341679905187,"intensidad_capital":2.8543563536905747,"dias_cobro":94.86539783623404},{"anio":2025,"ingresos_totales":30841,"ingresos_servicios":30693,"ingresos_construccion":0,"costos_totales":21676,"costo_servicios":21676,"utilidad_bruta":9165,"gastos_admin":1641,"gastos_venta":0,"utilidad_operativa":7595,"ingresos_financieros":475,"gastos_financieros":3224,"uai":5106,"impuesto_renta":-540,"utilidad_neta":5646,"ebitda":17209.3,"dep_amort":9614.3,"efectivo":1188,"ctas_cobrar_com":9249,"inventarios":1074,"activo_corriente":12153,"activo_no_corriente":62396,"activo_total":74549,"intangibles":45448,"ppe":1181,"pasivo_corriente":14138,"pasivo_no_corriente":31315,"pasivo_total":45453,"deuda_financiera":42403,"patrimonio":29096,"margen_bruto":0.297169352485328,"margen_operativo":0.24626309133945073,"margen_neto":0.1830679939042184,"margen_ebitda":0.558,"roa":0.0757354223396692,"roe":0.1940472917239483,"roic_aprox":0.11745942589913046,"liquidez_corriente":0.8595982458622153,"prueba_acida":0.7836327627670109,"capital_trabajo":-1985,"apalancamiento":2.5621734946384382,"deuda_patrimonio":1.5621734946384382,"endeudamiento_activo":0.6097063676239789,"deuda_neta_ebitda":2.394929060940267,"cobertura_intereses":5.337865384615386,"naves":169,"carga_tm":3083526,"teu":0,"contenedores":0,"ingreso_por_tm":9.95386450446664,"costo_por_tm":7.029614798123966,"ebitda_por_tm":5.581038719958905,"ingreso_por_teu":null,"tm_por_nave":18245.71597633136,"ingreso_por_nave":181615.38461538462,"rotacion_activos":0.41370105568149806,"intensidad_capital":2.417204370805097,"dias_cobro":109.98875965203793}],"m":{"2024":{"anio":2024,"ebit":5392,"dep_amort":9418.471000000001,"ebitda":14810.471000000001,"tasa_impositiva":0.451150895140665,"origen_tasa":"efectiva","nopat":2959.3943734015343,"capital_trabajo":5869,"var_capital_trabajo":-1126,"capex":1659.4710000000014,"capex_regulador":null,"fcff":11844.394373401534,"fcff_capex_regulador":null,"intereses_netos_dt":1846.8772378516624,"var_deuda":-7579,"fcfe":2418.5171355498715,"deuda_financiera":52833,"capital_invertido":76471,"capital_invertido_medio":79375.0,"roic":0.037283708641279174,"margen_fcff":0.42625668022462065,"conversion_caja":0.7997311073632657,"capex_sobre_da":0.17619324835209463,"capex_sobre_ingresos":0.05972112858530973,"fcf_yield_capital":0.14922071651529492,"spread":{"8":-0.04271629135872083,"10":-0.06271629135872084,"12":-0.08271629135872083},"eva":{"8":-3390.6056265984657,"10":-4978.105626598466,"12":-6565.605626598466},"capex_subestimado":false},"2025":{"anio":2025,"ebit":7595,"dep_amort":9614.278000000002,"ebitda":17209.278000000002,"tasa_impositiva":0.295,"origen_tasa":"legal","nopat":5354.475,"capital_trabajo":7915,"var_capital_trabajo":2046,"capex":702.2780000000021,"capex_regulador":0.0,"fcff":12220.475,"fcff_capex_regulador":12922.753000000002,"intereses_netos_dt":1938.0450000000003,"var_deuda":-10430,"fcfe":-147.5699999999997,"deuda_financiera":42403,"capital_invertido":71499,"capital_invertido_medio":73985.0,"roic":0.07237244035953234,"margen_fcff":0.396241204889595,"conversion_caja":0.7101096861820698,"capex_sobre_da":0.0730453186396318,"capex_sobre_ingresos":0.02277092182484362,"fcf_yield_capital":0.1651750354801649,"spread":{"8":-0.007627559640467657,"10":-0.02762755964046766,"12":-0.04762755964046765},"eva":{"8":-564.3249999999996,"10":-2044.0249999999999,"12":-3523.724999999999},"capex_subestimado":false}},"u":{"2021":{"segmento":"Granel mineral especializado","pct_contenedorizada":0.0,"ingreso_por_tm":8.277349527911538,"costo_por_tm":6.147901503254771,"ebitda_por_tm":null,"ingreso_por_recalada":152131.7365269461,"ebitda_por_recalada":null,"ebitda_sobre_activo_fijo":null,"ebitda_sobre_activo":null,"nopat_sobre_activo":null,"rotacion_activo":0.2559784574574977},"2022":{"segmento":"Granel mineral especializado","pct_contenedorizada":0.0,"ingreso_por_tm":8.691423227294818,"costo_por_tm":6.223296326234349,"ebitda_por_tm":null,"ingreso_por_recalada":167054.8780487805,"ebitda_por_recalada":null,"ebitda_sobre_activo_fijo":null,"ebitda_sobre_activo":null,"nopat_sobre_activo":null,"rotacion_activo":0.303415601586602},"2023":{"segmento":"Granel mineral especializado","pct_contenedorizada":0.0,"ingreso_por_tm":9.090909090909092,"costo_por_tm":6.957538525977766,"ebitda_por_tm":null,"ingreso_por_recalada":191507.35294117648,"ebitda_por_recalada":null,"ebitda_sobre_activo_fijo":null,"ebitda_sobre_activo":null,"nopat_sobre_activo":null,"rotacion_activo":0.30913636149238244},"2024":{"segmento":"Granel mineral especializado","pct_contenedorizada":0.0,"ingreso_por_tm":9.509446479127183,"costo_por_tm":7.1696760243721505,"ebitda_por_tm":5.096044480412681,"ingreso_por_recalada":186736.48648648648,"ebitda_por_recalada":100070.75000000001,"ebitda_sobre_activo_fijo":0.2666583424857313,"ebitda_sobre_activo":0.1867321153894647,"nopat_sobre_activo":null,"rotacion_activo":0.350341679905187},"2025":{"segmento":"Granel mineral especializado","pct_contenedorizada":0.0,"ingreso_por_tm":9.95386450446664,"costo_por_tm":7.029614798123966,"ebitda_por_tm":5.581038719958905,"ingreso_por_recalada":181615.38461538462,"ebitda_por_recalada":101830.04733727813,"ebitda_sobre_activo_fijo":0.3690681335649489,"ebitda_sobre_activo":0.23084518907027596,"nopat_sobre_activo":null,"rotacion_activo":0.41370105568149806}}}}};
+const F={
+  m0:v=>v==null?'—':new Intl.NumberFormat('es-PE',{maximumFractionDigits:0}).format(v),
+  m1:v=>v==null?'—':new Intl.NumberFormat('es-PE',{minimumFractionDigits:1,maximumFractionDigits:1}).format(v),
+  m2:v=>v==null?'—':new Intl.NumberFormat('es-PE',{minimumFractionDigits:2,maximumFractionDigits:2}).format(v),
+  pc:(v,d=1)=>v==null?'—':new Intl.NumberFormat('es-PE',{minimumFractionDigits:d,maximumFractionDigits:d}).format(v*100)+' %',
+  x:(v,d=2)=>v==null?'—':new Intl.NumberFormat('es-PE',{minimumFractionDigits:d,maximumFractionDigits:d}).format(v)+'×'
+};
+const CORTO={APMT:'APM Callao',DPW:'DP World',TISUR:'Matarani',TPP:'Paita',TPGSM:'Paracas',STI:'Salaverry',TCSA:'T. Callao'};
+const nc=k=>CORTO[k]||D.p[k].meta.nombre;
+const cs=()=>getComputedStyle(document.documentElement);
+const tk=n=>cs().getPropertyValue(n).trim();
+/* Color fijo por terminal: la identidad manda sobre el orden, de modo que reordenar
+   un ranking nunca repinta las barras. */
+const TC=k=>tk('--t'+(D.orden.indexOf(k)+1));
+const S=(k,y,f)=>{const r=D.p[k].s.find(z=>z.anio===y);return r?r[f]:null};
+const MO=(k,y,f)=>{const r=D.p[k].m[String(y)];return r?r[f]:null};
+const U=(k,y,f)=>{const r=D.p[k].u[String(y)];return r&&r[f]!==undefined?r[f]:null};
+const SEGS=['Contenedores','Multipropósito con contenedores','Graneles y carga fraccionada','Granel mineral especializado'];
+const segOrd=()=>SEGS.flatMap(g=>D.orden.filter(k=>D.p[k].meta.segmento===g));
+const el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e};
+const charts=[];
+
+/* ---------- Chart.js: tema vivo ---------- */
+function base(){
+  const ink=tk('--ink'),ink2=tk('--ink-2'),ink3=tk('--ink-3'),rule=tk('--rule-2'),card=tk('--card');
+  return {responsive:true,maintainAspectRatio:false,
+    interaction:{mode:'index',intersect:false},
+    layout:{padding:{top:6,right:10,bottom:2,left:2}},
+    plugins:{
+      legend:{display:true,position:'top',align:'start',
+        labels:{boxWidth:11,boxHeight:11,usePointStyle:false,color:ink2,padding:14,
+          font:{family:'IBM Plex Sans',size:12}}},
+      tooltip:{backgroundColor:card,titleColor:ink,bodyColor:ink2,borderColor:rule,borderWidth:1,
+        padding:10,cornerRadius:0,displayColors:true,boxWidth:10,boxHeight:10,
+        titleFont:{family:'IBM Plex Sans',size:12,weight:'600'},
+        bodyFont:{family:'IBM Plex Mono',size:12}}},
+    scales:{
+      x:{grid:{display:false},border:{color:rule},
+         ticks:{color:ink3,font:{family:'IBM Plex Mono',size:11}}},
+      y:{grid:{color:rule,drawTicks:false},border:{display:false},
+         ticks:{color:ink3,font:{family:'IBM Plex Mono',size:11},padding:8}}}};
+}
+function mk(cv,cfg){const c=new Chart(cv,cfg);charts.push(c);return c}
+function kill(){while(charts.length)charts.pop().destroy()}
+
+/* ---------- secciones ---------- */
+const SEC=[
+  ['sector','Panorama del sector',drawSector],
+  ['comparativo','Comparativo entre terminales',drawComp],
+  ['unitario','Economía unitaria',drawUnit],
+  ['caja','Modelo de caja y FCF',drawCaja],
+  ['terminal','Ficha por terminal',drawTerm],
+  ['operativa','Lectura operativa',drawOper],
+  ['gerencial','Lectura financiera',drawGerencial]
+];
+let actual='sector', puerto='TPGSM', anio=2025;
+/* Exponente de las tasas anuales compuestas: la base es siempre 2021 y el horizonte,
+   el ejercicio que el lector tenga seleccionado. */
+const EXPO=()=>anio>2021?1/(anio-2021):1;
+/* El diagnóstico está redactado sobre el cierre de 2025; en otro ejercicio se omite
+   en vez de mostrarse con cifras que no le corresponden. */
+function notaCierre(){
+  return el('p','sub','El diagnóstico está redactado sobre el cierre de 2025. '+
+    'Vuelva al ejercicio 2025 para leerlo; los cuadros y gráficos de esta sección '+
+    'sí corresponden al ejercicio '+anio+'.');
+}
+
+function tiles(items){
+  const g=el('div','tiles');
+  items.forEach(([k,v,u])=>{
+    const t=el('div','tile');
+    t.appendChild(el('span','k',k));
+    t.appendChild(el('div','v',v));
+    if(u)t.appendChild(el('div','u',u));
+    g.appendChild(t);
+  });return g;
+}
+function card(title,note,h){
+  const c=el('div','card');c.appendChild(el('h3',null,title));
+  if(note)c.appendChild(el('p','note',note));
+  if(h){const b=el('div','chartbox'+(h>330?' tall':''));b.style.height=h+'px';c.appendChild(b);c._box=b}
+  return c;
+}
+
+/* ====== 1. SECTOR ====== */
+function drawSector(m){
+  const O=D.orden, T=f=>O.reduce((a,k)=>a+(S(k,anio,f)||0),0);
+  const ing=T('ingresos_totales'), un=T('utilidad_neta'), act=T('activo_total');
+  const tm=T('carga_tm'), teu=T('teu'), nav=T('naves');
+  const ing21=O.reduce((a,k)=>a+S(k,2021,'ingresos_totales'),0);
+  const capex=O.reduce((a,k)=>a+D.p[k].meta.inv_acum,0);
+  const compr=O.reduce((a,k)=>a+D.p[k].meta.compromiso_inv,0);
+  /* El Ositrán publica el margen EBITDA de todos los terminales solo desde 2024. Antes de esa
+     fecha el agregado se calcula sobre los terminales que sí lo traen, y el margen se mide
+     contra los ingresos de ese mismo subconjunto: mezclar un EBITDA parcial con el ingreso
+     total del sistema daría un margen falso. */
+  const conEb=O.filter(k=>S(k,anio,'ebitda')!=null);
+  const eb=conEb.reduce((a,k)=>a+S(k,anio,'ebitda'),0);
+  const ingEb=conEb.reduce((a,k)=>a+S(k,anio,'ingresos_totales'),0);
+  const completo=conEb.length===O.length;
+  const pieEb=completo
+    ? 'millones de USD · margen '+F.pc(eb/ing)
+    : conEb.length+' de 7 terminales · margen '+F.pc(eb/ingEb)+' sobre sus ingresos';
+
+  m.appendChild(el('div','sub','Agregado de las siete concesiones portuarias en '+anio+'. El sector mueve '+
+    F.m1(tm/1e6)+' millones de toneladas y factura USD '+F.m0(ing/1000)+' millones'+
+    (completo?' con un margen EBITDA de '+F.pc(eb/ing)+', una rentabilidad propia de infraestructura regulada madura.'
+             :'. El margen EBITDA del ejercicio solo es calculable para '+conEb.length+' de los siete terminales, '+
+              'porque el regulador publica el dato completo desde 2024.')));
+  m.appendChild(tiles([
+    ['Carga movilizada',F.m1(tm/1e6),'millones de toneladas'],
+    ['Contenedores',F.m2(teu/1e6),'millones de TEU'],
+    ['Naves atendidas',F.m0(nav),'recaladas en el año'],
+    ['Ingresos totales',F.m0(ing/1000),'millones de USD · CAGR '+F.pc(Math.pow(ing/ing21,EXPO())-1)+' desde 2021'],
+    ['EBITDA',F.m0(eb/1000),pieEb],
+    ['Utilidad neta',F.m0(un/1000),'millones de USD'],
+    ['ROA agregado',F.pc(un/act),'sobre USD '+F.m0(act/1000)+' M de activos'],
+    ['Capex acumulado',F.m0(capex),'acumulado a 2025, de USD '+F.m0(compr)+' M comprometidos']
+  ]));
+
+  const g=el('div','grid2');
+  const c1=card('Participación en ingresos y en carga, '+anio,
+    'Callao concentra la facturación; la carga está más repartida porque los graneles del sur y norte pesan en tonelaje pero no en tarifa.',300);
+  const c2=card('Ingresos y utilidad operativa del sector',
+    'Serie dura de los estados de resultados auditados, sin estimaciones.',300);
+  g.append(c1,c2);m.appendChild(g);
+
+    mk(cvs(c1._box),{type:'bar',data:{labels:O.map(nc),datasets:[
+      {label:'% de ingresos',data:O.map(k=>S(k,anio,'ingresos_totales')/ing*100),
+       backgroundColor:tk('--sonda'),borderRadius:{topLeft:4,topRight:4},borderSkipped:'bottom',
+       barPercentage:.82,categoryPercentage:.46},
+      {label:'% de carga (TM)',data:O.map(k=>S(k,anio,'carga_tm')/tm*100),
+       backgroundColor:tk('--ocre'),borderRadius:{topLeft:4,topRight:4},borderSkipped:'bottom',
+       barPercentage:.82,categoryPercentage:.46}]},
+    options:{...base(),
+      plugins:{...base().plugins,tooltip:{...base().plugins.tooltip,
+        callbacks:{label:c=>c.dataset.label+': '+F.m1(c.parsed.y)+' %'}}},
+      scales:{...base().scales,
+        x:{...base().scales.x,ticks:{...base().scales.x.ticks,maxRotation:0,autoSkip:false,font:{family:'IBM Plex Sans',size:11}}},
+        y:{...base().scales.y,ticks:{...base().scales.y.ticks,callback:v=>v+' %'}}}}});
+
+  const yrs=D.anios;
+  mk(cvs(c2._box),{type:'line',data:{labels:yrs,datasets:[
+      {label:'Ingresos totales',data:yrs.map(y=>O.reduce((a,k)=>a+S(k,y,'ingresos_totales'),0)/1000),
+       borderColor:tk('--sonda'),backgroundColor:tk('--sonda')+'22',borderWidth:2,fill:true,
+       pointRadius:4,pointHoverRadius:7,pointBackgroundColor:tk('--sonda'),
+       pointBorderColor:tk('--card'),pointBorderWidth:2,tension:.25},
+      {label:'Utilidad operativa',data:yrs.map(y=>O.reduce((a,k)=>a+S(k,y,'utilidad_operativa'),0)/1000),
+       borderColor:tk('--magenta'),backgroundColor:tk('--magenta')+'22',borderWidth:2,fill:true,
+       pointRadius:4,pointHoverRadius:7,pointBackgroundColor:tk('--magenta'),
+       pointBorderColor:tk('--card'),pointBorderWidth:2,tension:.25}]},
+    options:{...base(),
+      plugins:{...base().plugins,tooltip:{...base().plugins.tooltip,
+        callbacks:{label:c=>c.dataset.label+': USD '+F.m0(c.parsed.y)+' M'}}},
+      scales:{...base().scales,y:{...base().scales.y,
+        ticks:{...base().scales.y.ticks,callback:v=>F.m0(v)}}}}});
+
+  m.appendChild(el('h3',null,'Cuadro maestro '+anio));
+  m.appendChild(el('p','sub','Pulse cualquier encabezado para reordenar. Todas las cifras monetarias en miles de USD.'));
+  m.appendChild(maestro());
+}
+function cvs(box){const c=document.createElement('canvas');box.appendChild(c);return c}
+
+/* cuadro maestro ordenable */
+function maestro(){
+  const cols=[
+    ['Terminal',k=>D.p[k].meta.nombre,v=>v,'t'],
+    ['Ingresos',k=>S(k,anio,'ingresos_totales'),F.m0],
+    ['EBITDA',k=>S(k,anio,'ebitda'),F.m0],
+    ['M. EBITDA',k=>S(k,anio,'margen_ebitda'),v=>F.pc(v)],
+    ['M. operativo',k=>S(k,anio,'margen_operativo'),v=>F.pc(v)],
+    ['M. neto',k=>S(k,anio,'margen_neto'),v=>F.pc(v)],
+    ['ROA',k=>S(k,anio,'roa'),v=>F.pc(v)],
+    ['ROIC aprox.',k=>S(k,anio,'roic_aprox'),v=>F.pc(v)],
+    ['Liq. corriente',k=>S(k,anio,'liquidez_corriente'),v=>F.x(v)],
+    ['Pasivo/Patrim.',k=>S(k,anio,'deuda_patrimonio'),v=>F.x(v)],
+    ['DN/EBITDA',k=>S(k,anio,'deuda_neta_ebitda'),v=>F.x(v),'p'],
+    ['Carga (TM)',k=>S(k,anio,'carga_tm'),F.m0],
+    ['USD/TM',k=>S(k,anio,'ingreso_por_tm'),F.m2],
+    ['EBITDA/TM',k=>S(k,anio,'ebitda_por_tm'),F.m2]
+  ];
+  const wrap=el('div','tscroll'),t=el('table');
+  const th=el('thead'),tr=el('tr');
+  cols.forEach((c,i)=>{const h=el('th','srt',c[0]);h.tabIndex=0;h.dataset.i=i;tr.appendChild(h)});
+  th.appendChild(tr);t.appendChild(th);
+  const tb=el('tbody');t.appendChild(tb);
+  let si=2,sd=-1;
+  function render(){
+    tb.innerHTML='';
+    const ks=[...D.orden].sort((a,b)=>{
+      const va=cols[si][1](a),vb=cols[si][1](b);
+      if(typeof va==='string')return sd*va.localeCompare(vb,'es');
+      return sd*(((vb??-1e18)-(va??-1e18))>0?1:-1);
+    });
+    ks.forEach(k=>{
+      const r=el('tr');
+      cols.forEach(c=>{
+        const v=c[1](k),txt=c[2](v);
+        const td=el('td',null,txt);
+        if(typeof v==='number'&&v<0&&c[3]!=='p')td.className='neg';
+        r.appendChild(td);
+      });
+      tb.appendChild(r);
+    });
+    tr.querySelectorAll('th').forEach((h,i)=>{
+      if(i===si)h.setAttribute('aria-sort',sd===-1?'descending':'ascending');
+      else h.removeAttribute('aria-sort');
+    });
+  }
+  const go=i=>{if(si===+i)sd*=-1;else{si=+i;sd=-1}render()};
+  tr.addEventListener('click',e=>{const h=e.target.closest('th');if(h)go(h.dataset.i)});
+  tr.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();const h=e.target.closest('th');if(h)go(h.dataset.i)}});
+  render();wrap.appendChild(t);return wrap;
+}
+
+/* ====== 2. COMPARATIVO ====== */
+function drawComp(m){
+  const O=D.orden;
+  m.appendChild(el('div','sub','Cuatro lecturas del mismo conjunto: dónde está la rentabilidad, de dónde sale, '+
+    'cuánto cuesta mover una tonelada y quién soporta la deuda. En todos los rankings cada barra lleva su etiqueta, '+
+    'de modo que el color solo marca el énfasis y nunca es la única señal.'));
+
+  const g1=el('div','grid2');
+  const a=card('Mapa de posición: rentabilidad del activo frente a margen EBITDA',
+    'Cada burbuja es un terminal; su diámetro es proporcional a los ingresos de 2025. El cuadrante superior derecho concentra a los operadores que convierten escala en retorno.',380);
+  const b=card('Margen EBITDA '+anio,
+    'Caja operativa sobre ingresos totales. Barras según el margen publicado por el Ositrán.',380);
+  g1.append(a,b);m.appendChild(g1);
+
+  const pts=O.map(k=>({x:S(k,anio,'margen_ebitda')*100,y:S(k,anio,'roa')*100,
+    r:Math.max(6,Math.sqrt(S(k,anio,'ingresos_totales'))/13),n:nc(k),full:D.p[k].meta.nombre,k}));
+  const lbl={id:'lbl',afterDatasetsDraw(ch){
+    const cx=ch.ctx;cx.save();cx.font='600 11px "IBM Plex Sans"';
+    const puestos=[];
+    ch.getDatasetMeta(0).data.forEach((p,i)=>{
+      const d=pts[i],w=cx.measureText(d.n).width;
+      let y=p.y-p.options.radius-6,x=p.x,arriba=true;
+      const choca=(x,y)=>puestos.some(q=>Math.abs(q.x-x)<(q.w+w)/2+8&&Math.abs(q.y-y)<15);
+      if(choca(x,y)){y=p.y+p.options.radius+14;arriba=false}
+      if(choca(x,y)){x=p.x+p.options.radius+w/2+8;y=p.y+4}
+      if(choca(x,y)){x=p.x-p.options.radius-w/2-8;y=p.y+4}
+      const a=ch.chartArea;
+      x=Math.min(Math.max(x,a.left+w/2+2),a.right-w/2-2);
+      y=Math.min(Math.max(y,a.top+11),a.bottom-3);
+      puestos.push({x,y,w});
+      cx.textAlign='center';cx.textBaseline=arriba?'bottom':'alphabetic';
+      cx.fillStyle=tk('--card');cx.lineWidth=3;cx.strokeStyle=tk('--card');cx.strokeText(d.n,x,y);
+      cx.fillStyle=tk('--ink');cx.fillText(d.n,x,y);});cx.restore();}};
+  mk(cvs(a._box),{type:'bubble',plugins:[lbl],data:{datasets:[{label:'Terminales',data:pts,
+      backgroundColor:pts.map(q=>TC(q.k)+'66'),borderColor:pts.map(q=>TC(q.k)),borderWidth:2}]},
+    options:{...base(),interaction:{mode:'nearest',intersect:true},
+      plugins:{...base().plugins,legend:{display:false},
+        tooltip:{...base().plugins.tooltip,callbacks:{
+          title:c=>c[0].raw.full,
+          label:c=>['Margen EBITDA: '+F.m1(c.raw.x)+' %','ROA: '+F.m1(c.raw.y)+' %',
+                    'Ingresos: USD '+F.m0(S(c.raw.k,anio,'ingresos_totales')/1000)+' M']}}},
+      scales:{x:{...base().scales.x,grid:{color:tk('--rule-2')},min:25,max:68,
+          title:{display:true,text:'Margen EBITDA (%)',color:tk('--ink-2'),font:{family:'IBM Plex Sans',size:12}},
+          ticks:{...base().scales.x.ticks,callback:v=>v+' %'}},
+        y:{...base().scales.y,min:-3,max:24,
+          title:{display:true,text:'ROA (%)',color:tk('--ink-2'),font:{family:'IBM Plex Sans',size:12}},
+          ticks:{...base().scales.y.ticks,callback:v=>v+' %'}}}}});
+
+  rank(b._box,'margen_ebitda',v=>F.pc(v),v=>v*100,' %');
+
+  const g2=el('div','grid2');
+  const c=card('Productividad del capital: EBITDA sobre activo total, '+anio,
+    'Caja operativa generada por cada dólar de activo. Es la medida de eficiencia comparable entre los siete, porque no depende del tipo de carga ni de la estructura de financiamiento.',340);
+  const d=card('Deuda neta sobre EBITDA',
+    'Veces de caja operativa necesarias para cancelar la deuda financiera neta. Por encima de 4× la estructura empieza a condicionar las decisiones de inversión.',340);
+  g2.append(c,d);m.appendChild(g2);
+
+  const ou=[...O].sort((x,y)=>U(y,anio,'ebitda_sobre_activo')-U(x,anio,'ebitda_sobre_activo'));
+  barh(c._box,ou,k=>U(k,anio,'ebitda_sobre_activo')*100,v=>F.m1(v)+' %',
+    (v,k)=>TC(k),' %');
+
+  const od=[...O].sort((x,y)=>(S(y,anio,'deuda_neta_ebitda')??-9)-(S(x,anio,'deuda_neta_ebitda')??-9));
+  const dld={id:'dld',afterDatasetsDraw(ch){
+    const cx=ch.ctx;cx.save();cx.font='600 11px "IBM Plex Mono"';cx.fillStyle=tk('--ink');
+    cx.textBaseline='middle';
+    ch.getDatasetMeta(0).data.forEach((p,i)=>{const v=S(od[i],anio,'deuda_neta_ebitda');
+      const pos=v>=0;cx.textAlign=pos?'left':'right';cx.fillText(F.x(v),p.x+(pos?7:-7),p.y)});cx.restore();}};
+  mk(cvs(d._box),{type:'bar',plugins:[dld,umbral(4,'4× de EBITDA')],data:{labels:od.map(nc),datasets:[{label:'Deuda neta / EBITDA',
+      data:od.map(k=>S(k,anio,'deuda_neta_ebitda')),
+      backgroundColor:od.map(TC),
+      borderRadius:4,barPercentage:.68,categoryPercentage:.8}]},
+    options:{...base(),indexAxis:'y',layout:{padding:{right:52,left:6,top:4}},
+      plugins:{...base().plugins,legend:{display:false},
+        tooltip:{...base().plugins.tooltip,callbacks:{label:c2=>F.x(c2.parsed.x)+' de EBITDA'}}},
+      scales:{x:{...base().scales.y,grid:{color:tk('--rule-2')},
+          ticks:{...base().scales.y.ticks,callback:v=>v+'×'}},
+        y:{...base().scales.x,ticks:{...base().scales.x.ticks,font:{family:'IBM Plex Sans',size:11.5}}}}}});
+
+  const g3=el('div','grid2');
+  const e=card('Rentabilidad sobre activos (ROA) '+anio,
+    'Utilidad neta sobre activo total. Es la medida comparable entre concesiones, a diferencia del ROE.',330);
+  const f=card('EBITDA generado por tonelada',
+    'Caja operativa por unidad física movilizada: mide la densidad de valor de la mezcla de carga de cada terminal.',330);
+  g3.append(e,f);m.appendChild(g3);
+  rank(e._box,'roa',v=>F.pc(v),v=>v*100,' %');
+  rank(f._box,'ebitda_por_tm',v=>'USD '+F.m2(v),v=>v,'',true);
+
+  m.appendChild(el('h3',null,'Trayectoria del margen operativo, 2021 – 2025'));
+  m.appendChild(el('p','sub','Serie construida solo con cifras auditadas. Permite separar la mejora estructural de la recuperación cíclica.'));
+  m.appendChild(tablaMargenes());
+}
+function rank(box,campo,fmt,val,suf,usd){
+  const O=[...D.orden].sort((a,b)=>(S(b,anio,campo)??-9)-(S(a,anio,campo)??-9));
+  const dl={id:'dl'+campo,afterDatasetsDraw(ch){
+    const cx=ch.ctx;cx.save();cx.font='600 11px "IBM Plex Mono"';cx.fillStyle=tk('--ink');
+    cx.textAlign='left';cx.textBaseline='middle';
+    ch.getDatasetMeta(0).data.forEach((p,i)=>{cx.fillText(fmt(S(O[i],anio,campo)),p.x+7,p.y)});cx.restore();}};
+  mk(cvs(box),{type:'bar',plugins:[dl],data:{labels:O.map(nc),
+      datasets:[{data:O.map(k=>val(S(k,anio,campo))),
+        backgroundColor:O.map(TC),
+        borderColor:O.map(k=>k===puerto?tk('--ink'):'transparent'),borderWidth:O.map(k=>k===puerto?2:0),
+        borderRadius:4,barPercentage:.68,categoryPercentage:.82}]},
+    options:{...base(),indexAxis:'y',
+      layout:{padding:{right:62,top:4}},
+      plugins:{...base().plugins,legend:{display:false},
+        tooltip:{...base().plugins.tooltip,callbacks:{
+          title:c=>D.p[O[c[0].dataIndex]].meta.nombre,label:c=>fmt(S(O[c.dataIndex],anio,campo))}}},
+      scales:{x:{...base().scales.y,grid:{color:tk('--rule-2')},
+          ticks:{...base().scales.y.ticks,callback:v=>(usd?'US$ ':'')+F.m0(v)+suf}},
+        y:{...base().scales.x,ticks:{...base().scales.x.ticks,font:{family:'IBM Plex Sans',size:11.5}}}}}});
+}
+function tablaMargenes(){
+  const w=el('div','tscroll'),t=el('table');
+  t.innerHTML='<thead><tr><th>Terminal</th>'+D.anios.map(y=>'<th>'+y+'</th>').join('')+
+    '<th>Δ '+anio+' vs 2021</th></tr></thead>';
+  const tb=el('tbody');
+  D.orden.forEach(k=>{
+    const v=D.anios.map(y=>S(k,y,'margen_operativo'));
+    const dl=(v[4]-v[0])*100;
+    tb.innerHTML+='<tr><td>'+D.p[k].meta.nombre+'</td>'+
+      v.map(x=>'<td class="'+(x<0?'neg':'')+'">'+F.pc(x)+'</td>').join('')+
+      '<td class="'+(dl<0?'neg':'')+'">'+(dl>0?'+':'')+F.m1(dl)+' pp</td></tr>';
+  });
+  t.appendChild(tb);w.appendChild(t);return w;
+}
+
+
+/* ====== ECONOMÍA UNITARIA ====== */
+function drawUnit(m){
+  const O=D.orden;
+  m.appendChild(el('div','sub','La tonelada no es la unidad de trabajo de todos los terminales. '+
+    'Un terminal de contenedores vende movimientos de caja y uno de granel mineral vende tonelaje por faja: '+
+    'dividir el costo entre toneladas en ambos casos compara operaciones que no son la misma. '+
+    'Aquí cada terminal se mide con la unidad que le corresponde, y solo contra sus pares de segmento.'));
+
+  const mezcla=card('Mezcla de carga: participación contenedorizada en el tonelaje, 2025',
+    'Define qué unidad de trabajo aplica a cada terminal y en qué grupo comparable entra.',330);
+  m.appendChild(mezcla);
+  const om=[...O].sort((x,y)=>D.p[y].meta.pct_contenedorizada-D.p[x].meta.pct_contenedorizada);
+  barh(mezcla._box,om,k=>D.p[k].meta.pct_contenedorizada*100,v=>F.m1(v)+' %',
+    (v,k)=>TC(k),' %');
+  m.appendChild(el('p','note','Cada terminal conserva su color en todos los gráficos de la carta, '+
+    'de modo que puede seguirse de una sección a otra.'));
+
+  SEGS.forEach(seg=>{
+    const ks=O.filter(k=>D.p[k].meta.segmento===seg);
+    if(!ks.length)return;
+    const porTeu=ks.some(k=>U(k,anio,'ingreso_por_teu')!=null);
+    const porTm=ks.some(k=>U(k,anio,'ingreso_por_tm')!=null);
+    m.appendChild(el('h3',null,seg));
+    m.appendChild(el('p','sub',ks.length===1
+      ? 'Único terminal del sistema en este segmento: sus unitarios no tienen par de comparación directa dentro del país.'
+      : 'Comparación válida: los '+ks.length+' terminales de este grupo atienden la misma clase de operación.'));
+    const cab=['Terminal','Contenedorizada'];
+    if(porTeu)cab.push('Ingreso por TEU','Costo por TEU','EBITDA por TEU');
+    if(porTm)cab.push('Ingreso por TM','Costo por TM','EBITDA por TM');
+    cab.push('Ingreso por recalada','EBITDA por recalada');
+    const w=el('div','tscroll'),t=el('table');
+    t.innerHTML='<thead><tr>'+cab.map((c,i)=>'<th'+(i===0?' class="l"':'')+'>'+c+'</th>').join('')+'</tr></thead>';
+    const tb=el('tbody');
+    ks.forEach(k=>{
+      let r='<tr><td>'+D.p[k].meta.nombre+'</td><td>'+F.pc(D.p[k].meta.pct_contenedorizada)+'</td>';
+      if(porTeu)r+=['ingreso_por_teu','costo_por_teu','ebitda_por_teu']
+        .map(f=>'<td>'+(U(k,anio,f)==null?'—':'US$ '+F.m2(U(k,anio,f)))+'</td>').join('');
+      if(porTm)r+=['ingreso_por_tm','costo_por_tm','ebitda_por_tm']
+        .map(f=>'<td>'+(U(k,anio,f)==null?'—':'US$ '+F.m2(U(k,anio,f)))+'</td>').join('');
+      r+='<td>US$ '+F.m0(U(k,anio,'ingreso_por_recalada'))+'</td>'+
+         '<td>US$ '+F.m0(U(k,anio,'ebitda_por_recalada'))+'</td></tr>';
+      tb.innerHTML+=r;
+    });
+    t.appendChild(tb);w.appendChild(t);m.appendChild(w);
+  });
+
+  m.appendChild(el('h3',null,'Medidas comparables entre los siete'));
+  m.appendChild(el('p','sub','Tres indicadores que no dependen del tipo de carga: la nave es la unidad común de servicio, '+
+    'y el activo es la unidad común de capital.'));
+  const g=el('div','grid2');
+  const a=card('EBITDA por recalada, '+anio,'Caja operativa que deja cada escala atendida. La ventana de atraque es el activo escaso de cualquier puerto.',330);
+  const b=card('EBITDA sobre activo total, '+anio,'Productividad del capital invertido, independiente de la mezcla de carga y de cómo esté financiado el activo.',330);
+  g.append(a,b);m.appendChild(g);
+  barh(a._box,[...O].sort((x,y)=>U(y,anio,'ebitda_por_recalada')-U(x,anio,'ebitda_por_recalada')),
+    k=>U(k,anio,'ebitda_por_recalada')/1000,v=>'US$ '+F.m0(v)+' mil',(v,k)=>TC(k),' mil');
+  barh(b._box,[...O].sort((x,y)=>U(y,anio,'ebitda_sobre_activo')-U(x,anio,'ebitda_sobre_activo')),
+    k=>U(k,anio,'ebitda_sobre_activo')*100,v=>F.m1(v)+' %',
+    (v,k)=>v<12?tk('--crit'):TC(k),' %');
+
+  const f=el('div','find');
+  f.innerHTML=
+   fc('nt','Corrección de método','Por qué se retiró el costo por tonelada de la comparación general',
+     'DP World mueve exclusivamente contenedores y Transportadora Callao exclusivamente concentrado de mineral por faja. '+
+     'Dividido entre toneladas, DP World salía a US$ '+F.m2(S('DPW',2025,'costo_servicios')*1000/S('DPW',2025,'carga_tm'))+
+     ' por tonelada y Transportadora Callao a US$ '+F.m2(U('TCSA',2025,'costo_por_tm'))+
+     ', cifras que parecían medir lo mismo y no lo hacen: una caja de veinte pies pesa una fracción de lo que pesa el mismo '+
+     'espacio de muelle ocupado por granel, de modo que el ranking premiaba sistemáticamente a quien mueve carga más pesada. '+
+     'Por eso DP World ya no aparece con una cifra por tonelada en este tablero. '+
+     'La comparación válida es dentro de cada segmento, y entre segmentos solo por recalada o por capital.')+
+   fc('ok','Dentro de contenedores','Paita cobra más por caja que DP World, y con razón',
+     'Paita factura US$ '+F.m2(U('TPP',2025,'ingreso_por_teu'))+' por TEU frente a US$ '+
+     F.m2(U('DPW',2025,'ingreso_por_teu'))+' de DP World. No es una anomalía: Paita atiende contenedor refrigerado de '+
+     'exportación con servicio completo a la carga, mientras que DP World opera volumen de tránsito y transbordo con tarifa '+
+     'de escala. APM Terminals aparece en US$ '+F.m2(U('APMT',2025,'ingreso_por_teu'))+' por TEU porque su facturación '+
+     'incluye el granel y la carga fraccionada que también atiende: su cifra por TEU no es comparable con la de un terminal puro.')+
+   fc('wn','Dentro de graneles','Aquí sí: Paracas es el más caro de su propio grupo',
+     'Entre los tres terminales de granel y carga fraccionada, que sí atienden la misma clase de operación, Paracas mueve la '+
+     'tonelada a US$ '+F.m2(U('TPGSM',2025,'costo_por_tm'))+' frente a US$ '+F.m2(U('STI',2025,'costo_por_tm'))+
+     ' de Salaverry y US$ '+F.m2(U('TISUR',2025,'costo_por_tm'))+' de Matarani, y deja US$ '+
+     F.m2(U('TPGSM',2025,'ebitda_por_tm'))+' de EBITDA por tonelada frente a US$ '+F.m2(U('TISUR',2025,'ebitda_por_tm'))+
+     ' de Matarani. La comparación corregida no absuelve a Paracas: lo confirma contra sus pares reales.')+
+   fc('cr','Productividad del capital','La brecha que ninguna segmentación explica',
+     'Paracas genera '+F.pc(U('TPGSM',2025,'ebitda_sobre_activo'))+' de EBITDA por dólar de activo, frente a '+
+     F.pc(U('TISUR',2025,'ebitda_sobre_activo'))+' de Matarani y '+F.pc(U('APMT',2025,'ebitda_sobre_activo'))+
+     ' de APM Terminals. Este indicador no depende del tipo de carga ni de cómo esté financiado el activo, y es donde la '+
+     'distancia es mayor: por cada dólar inmovilizado en infraestructura, Paracas devuelve menos de un tercio de lo que '+
+     'devuelve el mejor del sistema.');
+  m.appendChild(anio===2025?f:notaCierre());
+}
+
+/* ====== MODELO DE CAJA Y FCF ====== */
+function drawCaja(m){
+  const O=D.orden;
+  m.appendChild(el('div','sub','El regulador no publica estado de flujos de efectivo, de modo que el flujo de caja libre '+
+    'se construye por el método indirecto a partir del estado de resultados y de la variación del balance. '+
+    'El puente va del resultado operativo al flujo disponible para la empresa y para el accionista.'));
+  /* El método indirecto necesita el balance del año anterior, de modo que 2021, el primer
+     ejercicio de la serie, no admite cálculo de flujo. */
+  if(!O.some(k=>MO(k,anio,'fcff')!=null)){
+    m.appendChild(el('p','sub','El ejercicio '+anio+' no admite este cálculo: el flujo de caja libre se deriva de la '+
+      'variación del balance entre dos cierres, y '+anio+' es el primer año de la serie publicada. '+
+      'Seleccione un ejercicio desde 2022.'));
+    return;
+  }
+
+  const puente=card('Puente del resultado operativo al flujo de caja libre, '+anio,
+    'En miles de USD. Cada terminal en su columna; el signo negativo en capital de trabajo indica liberación de caja.',null);
+  m.appendChild(puente);
+  const filas=[
+    ['Resultado operativo (EBIT)','ebit','m0','tot'],
+    ['Menos impuesto sobre el EBIT','imp','m0','sub'],
+    ['Resultado operativo después de impuestos (NOPAT)','nopat','m0','tot'],
+    ['Más depreciación y amortización','dep_amort','m0','sub'],
+    ['Menos variación del capital de trabajo','var_capital_trabajo','m0','sub'],
+    ['Menos inversión en activo fijo (capex)','capex','m0','sub'],
+    ['Flujo de caja libre para la empresa (FCFF)','fcff','m0','tot'],
+    ['Menos intereses netos después de impuestos','intereses_netos_dt','m0','sub'],
+    ['Más variación de la deuda financiera','var_deuda','m0','sub'],
+    ['Flujo de caja libre para el accionista (FCFE)','fcfe','m0','tot'],
+  ];
+  const w=el('div','tscroll'),t=el('table');
+  t.innerHTML='<thead><tr><th class="l">Concepto</th>'+O.map(k=>'<th>'+nc(k)+'</th>').join('')+'</tr></thead>';
+  const tb=el('tbody');
+  filas.forEach(([lb,f,fm,cl])=>{
+    let r='<tr class="'+cl+'"><td>'+lb+'</td>';
+    O.forEach(k=>{
+      let v = f==='imp' ? -(MO(k,anio,'ebit')-MO(k,anio,'nopat')) : MO(k,anio,f);
+      if(f==='var_capital_trabajo'||f==='capex'||f==='intereses_netos_dt')v=-v;
+      r+='<td class="'+(v<0?'neg':'')+'">'+F.m0(v)+'</td>';
+    });
+    tb.innerHTML+=r+'</tr>';
+  });
+  t.appendChild(tb);w.appendChild(t);puente.appendChild(w);
+  puente.appendChild(el('p','note','El impuesto sobre el EBIT usa la tasa efectiva del ejercicio; donde el resultado antes de '+
+    'impuestos fue negativo o la tasa resultó atípica por créditos diferidos, se aplica la tasa legal de 29,5 %.'));
+
+  const g=el('div','grid2');
+  const a=card('Flujo de caja libre para la empresa, '+anio,'Caja que queda después de impuestos, capital de trabajo e inversión, antes de atender a los financiadores.',330);
+  const b=card('Conversión de EBITDA en caja, '+anio,'FCFF sobre EBITDA. Mide cuánta de la caja operativa sobrevive al capital de trabajo, al impuesto y a la inversión.',330);
+  g.append(a,b);m.appendChild(g);
+  barh(a._box,[...O].sort((x,y)=>(MO(y,anio,'fcff')??-9e9)-(MO(x,anio,'fcff')??-9e9)),
+    k=>MO(k,anio,'fcff')/1000,v=>'US$ '+F.m1(v)+' M',(v,k)=>v<0?tk('--crit'):TC(k),' M');
+  barh(b._box,[...O].sort((x,y)=>(MO(y,anio,'conversion_caja')??-9e9)-(MO(x,anio,'conversion_caja')??-9e9)),
+    k=>MO(k,anio,'conversion_caja')*100,v=>F.m0(v)+' %',(v,k)=>TC(k),' %');
+
+  const g2=el('div','grid2');
+  const c=card('Retorno sobre el capital invertido frente al costo de capital',
+    'ROIC del ejercicio contra tres escenarios de costo de capital en dólares. La barra marca el ROIC; la línea vertical, el escenario central de 10 %.',330);
+  const d2=card('Esfuerzo de reposición: capex sobre depreciación y amortización',
+    'Por encima de 1 el terminal invierte más de lo que consume su activo; por debajo, se descapitaliza.',330);
+  g2.append(c,d2);m.appendChild(g2);
+  const oroic=[...O].sort((x,y)=>(MO(y,anio,'roic')??-9e9)-(MO(x,anio,'roic')??-9e9));
+  const linea={id:'wacc',afterDatasetsDraw(ch){
+    const x=ch.scales.x.getPixelForValue(10),a2=ch.chartArea,cx=ch.ctx;
+    cx.save();cx.strokeStyle=tk('--magenta');cx.lineWidth=1.5;cx.setLineDash([4,3]);
+    cx.beginPath();cx.moveTo(x,a2.top);cx.lineTo(x,a2.bottom);cx.stroke();
+    cx.setLineDash([]);cx.fillStyle=tk('--magenta');cx.font='600 10px "IBM Plex Sans"';
+    cx.textAlign='left';cx.fillText('WACC 10 %',x+5,a2.bottom-5);cx.restore();}};
+  const vals=oroic.map(k=>MO(k,anio,'roic')*100);
+  const dl={id:'dlr',afterDatasetsDraw(ch){
+    const cx=ch.ctx;cx.save();cx.font='600 11px "IBM Plex Mono"';cx.fillStyle=tk('--ink');
+    cx.textAlign='left';cx.textBaseline='middle';
+    ch.getDatasetMeta(0).data.forEach((p,i)=>cx.fillText(F.m1(vals[i])+' %',p.x+7,p.y));cx.restore();}};
+  mk(cvs(c._box),{type:'bar',plugins:[dl,linea],data:{labels:oroic.map(nc),
+      datasets:[{data:vals,backgroundColor:oroic.map(TC),
+        borderRadius:4,barPercentage:.68,categoryPercentage:.82}]},
+    options:{...base(),indexAxis:'y',layout:{padding:{right:62,top:4}},
+      plugins:{...base().plugins,legend:{display:false},
+        tooltip:{...base().plugins.tooltip,callbacks:{
+          title:c2=>D.p[oroic[c2[0].dataIndex]].meta.nombre,
+          label:c2=>{const k=oroic[c2.dataIndex];return ['ROIC: '+F.pc(MO(k,anio,'roic')),
+            'Margen sobre WACC 8 %: '+F.pc((MO(k,anio,'spread')||{})['8']),
+            'Margen sobre WACC 10 %: '+F.pc((MO(k,anio,'spread')||{})['10']),
+            'Margen sobre WACC 12 %: '+F.pc((MO(k,anio,'spread')||{})['12'])]}}}},
+      scales:{x:{...base().scales.y,grid:{color:tk('--rule-2')},
+          ticks:{...base().scales.y.ticks,callback:v=>v+' %'}},
+        y:{...base().scales.x,ticks:{...base().scales.x.ticks,font:{family:'IBM Plex Sans',size:11.5}}}}}});
+  barh(d2._box,[...O].sort((x,y)=>(MO(y,anio,'capex_sobre_da')??-9e9)-(MO(x,anio,'capex_sobre_da')??-9e9)),
+    k=>MO(k,anio,'capex_sobre_da'),v=>F.m2(v)+'×',(v,k)=>TC(k),'×',umbral(1,'reposición plena'));
+
+  m.appendChild(el('h3',null,'Indicadores de caja y de creación de valor, '+anio));
+  m.appendChild(el('p','sub','El valor económico añadido se presenta en tres escenarios de costo de capital porque ninguna '+
+    'de las concesiones publica su WACC: lo que importa es si el signo cambia dentro del rango razonable.'));
+  const w2=el('div','tscroll'),t2=el('table');
+  t2.innerHTML='<thead><tr><th class="l">Terminal</th><th>FCFF</th><th>FCFE</th><th>Margen FCF</th>'+
+    '<th>Conversión</th><th>ROIC</th><th>Capex/D&amp;A</th><th>Capex/Ingresos</th>'+
+    '<th>EVA @8 %</th><th>EVA @10 %</th><th>EVA @12 %</th></tr></thead>';
+  const tb2=el('tbody');
+  [...O].sort((x,y)=>(MO(y,anio,'fcff')??-9e9)-(MO(x,anio,'fcff')??-9e9)).forEach(k=>{
+    const ev=MO(k,anio,'eva')||{};
+    tb2.innerHTML+='<tr><td>'+D.p[k].meta.nombre+'</td>'+
+      '<td class="'+(MO(k,anio,'fcff')<0?'neg':'')+'">'+F.m0(MO(k,anio,'fcff'))+'</td>'+
+      '<td class="'+(MO(k,anio,'fcfe')<0?'neg':'')+'">'+F.m0(MO(k,anio,'fcfe'))+'</td>'+
+      '<td>'+F.pc(MO(k,anio,'margen_fcff'))+'</td><td>'+F.pc(MO(k,anio,'conversion_caja'),0)+'</td>'+
+      '<td>'+F.pc(MO(k,anio,'roic'))+'</td><td>'+F.x(MO(k,anio,'capex_sobre_da'))+'</td>'+
+      '<td>'+F.pc(MO(k,anio,'capex_sobre_ingresos'))+'</td>'+
+      ['8','10','12'].map(x=>'<td class="'+(ev[x]<0?'neg':'')+'">'+F.m0(ev[x])+'</td>').join('')+'</tr>';
+  });
+  t2.appendChild(tb2);w2.appendChild(t2);
+
+  m.appendChild(el('h3',null,'Sensibilidad del capex'));
+  m.appendChild(el('p','sub','El capex derivado del balance y la inversión ejecutada que reporta el regulador no coinciden: '+
+    'el primero es adición neta contable, el segundo es inversión valorizada según contrato e incluye IGV. '+
+    'Se muestran ambos y el FCFF que resulta de cada uno.'));
+  const w3=el('div','tscroll'),t3=el('table');
+  t3.innerHTML='<thead><tr><th class="l">Terminal</th><th>Capex según balance</th><th>Inversión reportada</th>'+
+    '<th>Brecha</th><th>FCFF base</th><th>FCFF con inversión reportada</th></tr></thead>';
+  const tb3=el('tbody');
+  O.forEach(k=>{
+    const cb=MO(k,anio,'capex'),cr=MO(k,anio,'capex_regulador');
+    tb3.innerHTML+='<tr><td>'+D.p[k].meta.nombre+'</td><td>'+F.m0(cb)+'</td><td>'+F.m0(cr)+'</td>'+
+      '<td class="'+(cr-cb<0?'neg':'')+'">'+F.m0(cr-cb)+'</td><td>'+F.m0(MO(k,anio,'fcff'))+'</td>'+
+      '<td class="'+(MO(k,anio,'fcff_capex_regulador')<0?'neg':'')+'">'+F.m0(MO(k,anio,'fcff_capex_regulador'))+'</td></tr>';
+  });
+  t3.appendChild(tb3);w3.appendChild(t3);m.appendChild(w3);
+
+  m.appendChild(el('h3',null,'Lectura del modelo'));
+  m.appendChild(el('p','sub',' '));
+  const f=el('div','find');
+  f.innerHTML=
+   fc('cr','CFO','Paracas no tiene un problema de caja: tiene un problema de retorno',
+     'El modelo corrige el diagnóstico que daría el estado de resultados por sí solo. Paracas generó un FCFF de '+
+     'USD <b class="num">'+F.m0(MO('TPGSM',2025,'fcff'))+'</b> mil y un FCFE de USD <b class="num">'+
+     F.m0(MO('TPGSM',2025,'fcfe'))+'</b> mil en 2025, ambos positivos, pese a una pérdida contable de USD '+
+     F.m0(Math.abs(S('TPGSM',2025,'utilidad_neta')))+' mil. La pérdida la explican la amortización del intangible '+
+     '(USD <b class="num">'+F.m0(MO('TPGSM',2025,'dep_amort'))+'</b> mil, que no es salida de caja) y el gasto financiero. '+
+     'El problema real es otro: su ROIC de <b class="num">'+F.pc(MO('TPGSM',2025,'roic'))+
+     '</b> está muy por debajo de cualquier costo de capital razonable, de modo que destruye valor económico incluso '+
+     'generando caja. Al 10 % de costo de capital el valor destruido es de USD <b class="num">'+
+     F.m0(MO('TPGSM',2025,'eva')['10'])+'</b> mil en el año.')+
+   fc('wn','CFO','Tres concesiones invierten menos de lo que consume su activo',
+     'El ratio de capex sobre depreciación es de <b class="num">'+F.x(MO('TCSA',2025,'capex_sobre_da'))+
+     '</b> en Transportadora Callao, <b class="num">'+F.x(MO('TPGSM',2025,'capex_sobre_da'))+'</b> en Paracas, '+
+     '<b class="num">'+F.x(MO('TISUR',2025,'capex_sobre_da'))+'</b> en Matarani y <b class="num">'+
+     F.x(MO('DPW',2025,'capex_sobre_da'))+'</b> en DP World. En el caso de una concesión que termina, descapitalizar es '+
+     'coherente; en una con compromiso contractual pendiente, es un diferimiento que tarde o temprano vuelve al flujo.')+
+   fc('ok','CFO','La conversión de caja separa a los operadores de los rentistas',
+     'Matarani convierte el <b class="num">'+F.pc(MO('TISUR',2025,'conversion_caja'),0)+
+     '</b> de su EBITDA en flujo libre, pero lo logra invirtiendo apenas <b class="num">'+
+     F.pc(MO('TISUR',2025,'capex_sobre_ingresos'))+'</b> de sus ingresos sobre un compromiso contractual ejecutado solo '+
+     'al '+F.m1(D.p.TISUR.meta.avance_inv)+' %. APM Terminals convierte el <b class="num">'+
+     F.pc(MO('APMT',2025,'conversion_caja'),0)+'</b> porque está reinvirtiendo <b class="num">'+
+     F.pc(MO('APMT',2025,'capex_sobre_ingresos'))+'</b> de sus ingresos. La conversión alta no siempre es una buena noticia: '+
+     'puede ser una concesión que está dejando de invertir.')+
+   fc('nt','COO','La caja se gana en el capital de trabajo tanto como en el muelle',
+     'La variación del capital de trabajo movió el FCFF de 2025 entre USD <b class="num">'+
+     F.m0(-MO('TPGSM',2025,'var_capital_trabajo'))+'</b> mil y USD <b class="num">'+
+     F.m0(-MO('APMT',2025,'var_capital_trabajo'))+'</b> mil según el terminal. En APM Terminals el capital de trabajo '+
+     'consumió USD '+F.m0(MO('APMT',2025,'var_capital_trabajo'))+' mil de caja en el año, más que su utilidad neta de '+
+     'muchos ejercicios anteriores. Es una palanca operativa que depende de la facturación y la cobranza, no del muelle.')+
+   fc('cr','CEO','Solo cuatro de siete concesiones crean valor económico',
+     'Midiendo el ROIC contra un costo de capital del 10 % en dólares, crean valor APM Terminals ('+
+     F.pc(MO('APMT',2025,'spread')['10'])+' de margen), Matarani ('+F.pc(MO('TISUR',2025,'spread')['10'])+'), '+
+     'DP World ('+F.pc(MO('DPW',2025,'spread')['10'])+') y Paita ('+F.pc(MO('TPP',2025,'spread')['10'])+'). '+
+     'Salaverry queda en el límite ('+F.pc(MO('STI',2025,'spread')['10'])+'), y Transportadora Callao ('+
+     F.pc(MO('TCSA',2025,'spread')['10'])+') y Paracas ('+F.pc(MO('TPGSM',2025,'spread')['10'])+') destruyen valor. '+
+     'En el escenario optimista de 8 % el resultado no cambia de signo para Paracas, que es el dato relevante: '+
+     'su brecha no depende del supuesto de costo de capital.')+
+   fc('nt','CEO','El margen de Matarani esconde una erosión de capital',
+     'Su ROIC de <b class="num">'+F.pc(MO('TISUR',2025,'roic'))+'</b> es el más alto del sistema, pero se calcula sobre un '+
+     'capital invertido de apenas USD <b class="num">'+F.m0(MO('TISUR',2025,'capital_invertido')/1000)+
+     '</b> millones frente a un activo total de USD '+F.m0(S('TISUR',2025,'activo_total')/1000)+' millones: el reparto de '+
+     'dividendos y la deuda intragrupo han vaciado el capital propio. La productividad real de su activo, '+
+     F.pc(U('TISUR',2025,'ebitda_sobre_activo'))+' de EBITDA sobre activo total, es buena pero no excepcional. '+
+     'Es el mismo sesgo que afecta al ROE, trasladado al ROIC.');
+  m.appendChild(anio===2025?f:notaCierre());
+}
+
+/* ====== 3. FICHA POR TERMINAL ====== */
+function drawTerm(m){
+  m.appendChild(el('div','sub','Estados financieros completos, ratios y tráfico de cada concesión. '+
+    'Seleccione un terminal para ver su serie 2021 – 2025.'));
+  const pk=el('div','picker');
+  D.orden.forEach(k=>{
+    const b=el('button',null,D.p[k].meta.nombre);
+    b.setAttribute('aria-pressed',k===puerto);
+    b.onclick=()=>{puerto=k;draw()};
+    pk.appendChild(b);
+  });
+  m.appendChild(pk);
+  const host=el('div');m.appendChild(host);
+  ficha(host);
+}
+function ficha(host){
+  const k=puerto,M=D.p[k].meta,yrs=D.anios;
+  const id=el('dl','ident');
+  const row=(t,v)=>{const d=el('div');d.appendChild(el('dt',null,t));d.appendChild(el('dd',null,v));return d};
+  id.append(row('Terminal',M.terminal),row('Concesionario',M.operador),row('Tipo de carga',M.tipo),
+    row('Modalidad',M.modalidad),row('Inicio / plazo',M.inicio+' · '+M.plazo+' años'));
+  const cap=row('Capex acumulado','USD '+F.m1(M.inv_acum)+' M · '+F.m1(M.avance_inv)+' % del compromiso');
+  const bar=el('div','bar');const i=el('i');i.style.width=Math.min(100,M.avance_inv)+'%';bar.appendChild(i);
+  cap.querySelector('dd').appendChild(bar);
+  id.appendChild(cap);
+  host.appendChild(id);
+
+  host.appendChild(tiles([
+    ['Ingresos '+anio,F.m0(S(k,anio,'ingresos_totales')/1000),'millones de USD'],
+    ['EBITDA',F.m0(S(k,anio,'ebitda')/1000),'margen '+F.pc(S(k,anio,'margen_ebitda'))],
+    ['Utilidad neta',(Math.abs(S(k,anio,'utilidad_neta'))<10000?F.m1:F.m0)(S(k,anio,'utilidad_neta')/1000),
+      'millones de USD · margen '+F.pc(S(k,anio,'margen_neto'))],
+    ['ROA',F.pc(S(k,anio,'roa')),'ROE '+F.pc(S(k,anio,'roe'))],
+    ['Carga',F.m1(S(k,anio,'carga_tm')/1e6),'millones de TM'],
+    ['Ingreso por TM','US$ '+F.m2(S(k,anio,'ingreso_por_tm')),'costo US$ '+F.m2(S(k,anio,'costo_por_tm'))],
+    ['Liquidez',F.x(S(k,anio,'liquidez_corriente')),'prueba ácida '+F.x(S(k,anio,'prueba_acida'))],
+    ['Deuda neta/EBITDA',F.x(S(k,anio,'deuda_neta_ebitda')),'cobertura '+F.x(S(k,anio,'cobertura_intereses'),1)]
+  ]));
+
+  const g=el('div','grid2');
+  const a=card('Ingresos, EBITDA y utilidad operativa','En millones de USD. Las barras son ingresos por servicios portuarios; la línea, la caja operativa.',320);
+  const b=card('Márgenes de rentabilidad','Bruto, operativo y neto sobre ingresos totales.',320);
+  g.append(a,b);host.appendChild(g);
+
+  mk(cvs(a._box),{data:{labels:yrs,datasets:[
+      {type:'bar',label:'Ingresos por servicios',data:yrs.map(y=>S(k,y,'ingresos_servicios')/1000),
+       backgroundColor:TC(k)+'cc',borderRadius:{topLeft:4,topRight:4},borderSkipped:'bottom',
+       barPercentage:.62,categoryPercentage:.8,order:3},
+      {type:'line',label:'Utilidad operativa',data:yrs.map(y=>S(k,y,'utilidad_operativa')/1000),
+       borderColor:tk('--magenta'),borderWidth:2,pointRadius:4,pointHoverRadius:7,
+       pointBackgroundColor:tk('--magenta'),pointBorderColor:tk('--card'),pointBorderWidth:2,
+       tension:.25,order:1},
+      {type:'line',label:'EBITDA',data:yrs.map(y=>{const v=S(k,y,'ebitda');return v==null?null:v/1000}),
+       borderColor:tk('--ocre'),borderWidth:2,borderDash:[5,4],pointRadius:4,pointHoverRadius:7,
+       pointBackgroundColor:tk('--ocre'),pointBorderColor:tk('--card'),pointBorderWidth:2,
+       spanGaps:false,tension:.25,order:2}]},
+    options:{...base(),
+      plugins:{...base().plugins,tooltip:{...base().plugins.tooltip,
+        callbacks:{label:c=>c.parsed.y==null?null:c.dataset.label+': USD '+F.m1(c.parsed.y)+' M'}}},
+      scales:{...base().scales,y:{...base().scales.y,ticks:{...base().scales.y.ticks,callback:v=>F.m0(v)}}}}});
+
+  mk(cvs(b._box),{type:'line',data:{labels:yrs,datasets:[
+      ['Margen bruto','margen_bruto','--sonda'],
+      ['Margen operativo','margen_operativo','--magenta'],
+      ['Margen neto','margen_neto','--ocre']
+    ].map(([lb,f,c])=>({label:lb,data:yrs.map(y=>S(k,y,f)*100),borderColor:tk(c),borderWidth:2,
+      pointRadius:4,pointHoverRadius:7,pointBackgroundColor:tk(c),pointBorderColor:tk('--card'),
+      pointBorderWidth:2,tension:.25,fill:false}))},
+    options:{...base(),
+      plugins:{...base().plugins,tooltip:{...base().plugins.tooltip,
+        callbacks:{label:c=>c.dataset.label+': '+F.m1(c.parsed.y)+' %'}}},
+      scales:{...base().scales,y:{...base().scales.y,ticks:{...base().scales.y.ticks,callback:v=>v+' %'}}}}});
+
+  const g2=el('div','grid2');
+  const c=card('Carga movilizada y recaladas','Ambas series indexadas a 2021 = 100 para compararlas en un solo eje. El detalle en unidades aparece al pasar el cursor.',300);
+  const d=card('Estructura del balance','Activo, pasivo y patrimonio al cierre de cada ejercicio, en millones de USD.',300);
+  g2.append(c,d);host.appendChild(g2);
+
+  mk(cvs(c._box),{data:{labels:yrs,datasets:[
+      {type:'bar',label:'Carga movilizada',data:yrs.map(y=>S(k,y,'carga_tm')/S(k,2021,'carga_tm')*100),
+       backgroundColor:TC(k)+'cc',borderRadius:{topLeft:4,topRight:4},borderSkipped:'bottom',
+       barPercentage:.62,categoryPercentage:.8},
+      {type:'line',label:'Naves atendidas',
+       data:yrs.map(y=>S(k,y,'naves')/S(k,2021,'naves')*100),
+       borderColor:tk('--sonda'),borderWidth:2,borderDash:[5,4],pointRadius:4,pointHoverRadius:7,
+       pointBackgroundColor:tk('--sonda'),pointBorderColor:tk('--card'),pointBorderWidth:2,tension:.25}]},
+    options:{...base(),
+      plugins:{...base().plugins,tooltip:{...base().plugins.tooltip,callbacks:{
+        label:c2=>c2.datasetIndex===0
+          ?'Carga: '+F.m2(S(k,yrs[c2.dataIndex],'carga_tm')/1e6)+' M TM (índice '+F.m0(c2.parsed.y)+')'
+          :'Naves: '+F.m0(S(k,yrs[c2.dataIndex],'naves'))+' recaladas (índice '+F.m0(c2.parsed.y)+')'}}},
+      scales:{...base().scales,y:{...base().scales.y,
+        title:{display:true,text:'Índice 2021 = 100',color:tk('--ink-2'),font:{family:'IBM Plex Sans',size:11.5}},
+        ticks:{...base().scales.y.ticks,callback:v=>F.m0(v)}}}}});
+
+  mk(cvs(d._box),{type:'bar',data:{labels:yrs,datasets:[
+      {label:'Pasivo total',data:yrs.map(y=>S(k,y,'pasivo_total')/1000),backgroundColor:tk('--ocre'),
+       borderRadius:{topLeft:0,topRight:0},barPercentage:.68,categoryPercentage:.8,stack:'s'},
+      {label:'Patrimonio',data:yrs.map(y=>S(k,y,'patrimonio')/1000),backgroundColor:TC(k),
+       borderRadius:{topLeft:4,topRight:4},borderSkipped:'bottom',barPercentage:.68,categoryPercentage:.8,stack:'s'}]},
+    options:{...base(),
+      plugins:{...base().plugins,tooltip:{...base().plugins.tooltip,
+        callbacks:{label:c2=>c2.dataset.label+': USD '+F.m0(c2.parsed.y)+' M'}}},
+      scales:{...base().scales,x:{...base().scales.x,stacked:true},
+        y:{...base().scales.y,stacked:true,ticks:{...base().scales.y.ticks,callback:v=>F.m0(v)}}}}});
+
+  host.appendChild(el('h3',null,'Estado de resultados integrales'));
+  host.appendChild(el('p','sub','En miles de USD. Fuente: EEFF auditados reproducidos en el Informe de Desempeño 2025 del Ositrán.'));
+  host.appendChild(tablaSerie([
+    ['s','Resultado de explotación'],
+    ['r','Ingresos totales','ingresos_totales',F.m0],
+    ['b','Ingresos por servicios portuarios','ingresos_servicios',F.m0],
+    ['b','Ingresos por servicios de construcción','ingresos_construccion',F.m0],
+    ['r','Costos totales','costos_totales',F.m0],
+    ['b','Costo de servicios portuarios','costo_servicios',F.m0],
+    ['t','Utilidad bruta','utilidad_bruta',F.m0],
+    ['r','Gastos de administración','gastos_admin',F.m0],
+    ['r','Gastos de venta','gastos_venta',F.m0],
+    ['t','Utilidad operativa','utilidad_operativa',F.m0],
+    ['b','Depreciación y amortización','dep_amort',F.m0],
+    ['t','EBITDA','ebitda',F.m0],
+    ['s','Resultado financiero e impuestos'],
+    ['r','Ingresos financieros','ingresos_financieros',F.m0],
+    ['r','Gastos financieros','gastos_financieros',F.m0],
+    ['t','Utilidad antes de impuestos','uai',F.m0],
+    ['r','Impuesto a la renta','impuesto_renta',F.m0],
+    ['t','Utilidad neta','utilidad_neta',F.m0]
+  ]));
+
+  host.appendChild(el('h3',null,'Estado de situación financiera'));
+  host.appendChild(el('p','sub','En miles de USD, al 31 de diciembre de cada ejercicio.'));
+  host.appendChild(tablaSerie([
+    ['s','Activo'],
+    ['b','Efectivo y equivalentes','efectivo',F.m0],
+    ['b','Cuentas por cobrar comerciales','ctas_cobrar_com',F.m0],
+    ['b','Inventarios y suministros','inventarios',F.m0],
+    ['t','Total activo corriente','activo_corriente',F.m0],
+    ['b','Activos intangibles de la concesión','intangibles',F.m0],
+    ['b','Instalaciones, maquinaria y equipo','ppe',F.m0],
+    ['t','Total activo no corriente','activo_no_corriente',F.m0],
+    ['t','Total activo','activo_total',F.m0],
+    ['s','Pasivo y patrimonio'],
+    ['t','Total pasivo corriente','pasivo_corriente',F.m0],
+    ['t','Total pasivo no corriente','pasivo_no_corriente',F.m0],
+    ['t','Total pasivo','pasivo_total',F.m0],
+    ['b','Del cual: deuda financiera','deuda_financiera',F.m0],
+    ['t','Total patrimonio','patrimonio',F.m0],
+    ['b','Capital de trabajo','capital_trabajo',F.m0]
+  ]));
+
+  host.appendChild(el('h3',null,'Indicadores financieros y operativos'));
+  host.appendChild(el('p','sub','Calculados sobre los estados financieros anteriores. Los ratios de 2024 y 2025 coinciden con los publicados por el Ositrán.'));
+  host.appendChild(tablaSerie([
+    ['s','Rentabilidad'],
+    ['r','Margen bruto','margen_bruto',v=>F.pc(v)],
+    ['r','Margen operativo','margen_operativo',v=>F.pc(v)],
+    ['r','Margen EBITDA','margen_ebitda',v=>F.pc(v)],
+    ['r','Margen neto','margen_neto',v=>F.pc(v)],
+    ['r','ROA — utilidad neta / activo','roa',v=>F.pc(v)],
+    ['r','ROE — utilidad neta / patrimonio','roe',v=>F.pc(v)],
+    ['r','ROIC aproximado','roic_aprox',v=>F.pc(v)],
+    ['s','Liquidez y solvencia'],
+    ['r','Liquidez corriente','liquidez_corriente',v=>F.x(v)],
+    ['r','Prueba ácida','prueba_acida',v=>F.x(v)],
+    ['r','Apalancamiento — activo / patrimonio','apalancamiento',v=>F.x(v)],
+    ['r','Pasivo / patrimonio','deuda_patrimonio',v=>F.x(v)],
+    ['r','Endeudamiento del activo','endeudamiento_activo',v=>F.pc(v)],
+    ['r','Deuda neta / EBITDA','deuda_neta_ebitda',v=>F.x(v)],
+    ['r','Cobertura de intereses','cobertura_intereses',v=>F.x(v,1)],
+    ['s','Eficiencia operativa'],
+    ['r','Carga movilizada (TM)','carga_tm',F.m0],
+    ['r','TEU movilizados','teu',F.m0],
+    ['r','Naves atendidas','naves',F.m0],
+    ['r','Ingreso por tonelada (USD)','ingreso_por_tm',F.m2],
+    ['r','Costo por tonelada (USD)','costo_por_tm',F.m2],
+    ['r','EBITDA por tonelada (USD)','ebitda_por_tm',F.m2],
+    ['r','Toneladas por recalada','tm_por_nave',F.m0],
+    ['r','Rotación del activo','rotacion_activos',v=>F.x(v)],
+    ['r','Días de cobro','dias_cobro',v=>F.m0(v)+' d']
+  ]));
+}
+function tablaSerie(filas){
+  const k=puerto,w=el('div','tscroll'),t=el('table');
+  t.innerHTML='<thead><tr><th>Concepto</th>'+D.anios.map(y=>'<th>'+y+'</th>').join('')+'</tr></thead>';
+  const tb=el('tbody');
+  filas.forEach(f=>{
+    if(f[0]==='s'){tb.innerHTML+='<tr class="sec"><td colspan="'+(D.anios.length+1)+'">'+f[1]+'</td></tr>';return}
+    const cls=f[0]==='t'?'tot':f[0]==='b'?'sub2':'';
+    tb.innerHTML+='<tr class="'+cls+'"><td>'+f[1]+'</td>'+
+      D.anios.map(y=>{const v=S(k,y,f[2]);
+        return '<td class="'+(typeof v==='number'&&v<0?'neg':'')+'">'+(v==null?'—':f[3](v))+'</td>'}).join('')+'</tr>';
+  });
+  t.appendChild(tb);w.appendChild(t);return w;
+}
+
+/* ====== 4. CFO ====== */
+/* Lectura única de gerencia: la mirada financiera y la estratégica en una sola sección. */
+function drawGerencial(m){
+  m.appendChild(el('div','sub','Dónde se crea valor económico y dónde solo se contabiliza utilidad, y qué posición '+
+    'ocupa cada concesión en el mercado que importará al final del plazo. Primero la estructura financiera, '+
+    'después la lectura competitiva.'));
+  m.appendChild(el('h3','bloque','Estructura financiera y creación de valor'));
+  drawCFO(m);
+  m.appendChild(el('h3','bloque','Posición competitiva y sostenibilidad de la concesión'));
+  drawCEO(m);
+}
+
+function drawCFO(m){
+  const O=D.orden,T=f=>O.reduce((a,k)=>a+(S(k,anio,f)||0),0);
+  m.appendChild(el('p','sub','Estructura de costos, capital de trabajo, solvencia y retorno sobre el capital empleado.'));
+
+  const g=el('div','grid2');
+  const a=card('Peso del costo de servicios sobre el ingreso, '+anio,
+    'Proporción del ingreso por servicios portuarios absorbida por el costo directo. Marca el espacio real de maniobra sobre el margen.',330);
+  const b=card('Gasto financiero como proporción del EBITDA',
+    'Cuánta caja operativa se consume en servir la deuda antes de impuestos e inversión.',330);
+  g.append(a,b);m.appendChild(g);
+
+  const o1=[...O].sort((x,y)=>S(y,anio,'costo_servicios')/S(y,anio,'ingresos_servicios')-
+                              S(x,anio,'costo_servicios')/S(x,anio,'ingresos_servicios'));
+  barh(a._box,o1,k=>S(k,anio,'costo_servicios')/S(k,anio,'ingresos_servicios')*100,
+    v=>F.m1(v)+' %',(v,k)=>TC(k),' %');
+  const o2=[...O].sort((x,y)=>S(y,anio,'gastos_financieros')/S(y,anio,'ebitda')-
+                              S(x,anio,'gastos_financieros')/S(x,anio,'ebitda'));
+  barh(b._box,o2,k=>S(k,anio,'gastos_financieros')/S(k,anio,'ebitda')*100,
+    v=>F.m1(v)+' %',(v,k)=>TC(k),' %');
+
+
+  m.appendChild(el('h3',null,'Capital de trabajo y posición de caja, '+anio));
+  m.appendChild(el('p','sub','En miles de USD. El ciclo de cobro es la variable de gestión más accesible en el corto plazo.'));
+  const w=el('div','tscroll'),t=el('table');
+  t.innerHTML='<thead><tr><th>Terminal</th><th>Capital de trabajo</th><th>Caja</th><th>Cuentas por cobrar</th>'+
+    '<th>Días de cobro</th><th>Deuda financiera</th><th>Cobertura de intereses</th><th>Liquidez</th></tr></thead>';
+  const tb=el('tbody');
+  [...O].sort((x,y)=>S(x,anio,'capital_trabajo')-S(y,anio,'capital_trabajo')).forEach(k=>{
+    const ct=S(k,anio,'capital_trabajo'),dc=S(k,anio,'dias_cobro');
+    tb.innerHTML+='<tr><td>'+D.p[k].meta.nombre+'</td>'+
+      '<td class="'+(ct<0?'neg':'')+'">'+F.m0(ct)+'</td>'+
+      '<td>'+F.m0(S(k,anio,'efectivo'))+'</td><td>'+F.m0(S(k,anio,'ctas_cobrar_com'))+'</td>'+
+      '<td class="'+(dc>60?'neg':'')+'">'+F.m0(dc)+'</td>'+
+      '<td>'+F.m0(S(k,anio,'deuda_financiera'))+'</td><td>'+F.x(S(k,anio,'cobertura_intereses'),1)+'</td>'+
+      '<td>'+F.x(S(k,anio,'liquidez_corriente'))+'</td></tr>';
+  });
+  t.appendChild(tb);w.appendChild(t);m.appendChild(w);
+
+  m.appendChild(el('h3',null,'Diagnóstico financiero'));
+  m.appendChild(el('p','sub',' '));
+  const f=el('div','find');
+  f.innerHTML=
+   fc('ok','Rentabilidad','El sector rinde como infraestructura regulada madura',
+     'Los siete terminales generaron USD <b class="num">'+F.m0(T('ebitda')/1000)+'</b> millones de EBITDA sobre ingresos de USD <b class="num">'+
+     F.m0(T('ingresos_totales')/1000)+'</b> millones, un margen de <b class="num">'+F.pc(T('ebitda')/T('ingresos_totales'))+
+     '</b>. El ROA agregado de <b class="num">'+F.pc(T('utilidad_neta')/T('activo_total'))+
+     '</b> sobre una base de activos de USD <b class="num">'+F.m0(T('activo_total')/1000)+'</b> millones confirma que el riesgo del negocio está en el volumen y en la tarifa regulada, no en el margen.')+
+   fc('cr','Señal de alerta','El ROE es engañoso en este sector',
+     'TISUR muestra el ROE más alto del sistema, <b class="num">'+F.pc(S('TISUR',2025,'roe'))+
+     '</b>, pero su patrimonio cayó de USD <b class="num">'+F.m0(S('TISUR',2021,'patrimonio')/1000)+'</b> a USD <b class="num">'+
+     F.m0(S('TISUR',2025,'patrimonio')/1000)+'</b> millones entre 2021 y 2025 con utilidad prácticamente plana. '+
+     'DP World repite el patrón: tras repartir USD 180,6 millones en dividendos durante 2025, su patrimonio bajó a USD <b class="num">'+
+     F.m0(S('DPW',2025,'patrimonio')/1000)+'</b> millones y el ROE saltó a <b class="num">'+F.pc(S('DPW',2025,'roe'))+
+     '</b>. En ambos casos el denominador explica el ratio. Use ROA y ROIC para comparar.')+
+   fc('cr','Estructura de capital','Paracas es el único caso de insolvencia operativa recurrente',
+     'Con utilidad operativa de USD <b class="num">'+F.m1(S('TPGSM',2025,'utilidad_operativa')/1000)+
+     '</b> millones frente a gastos financieros de USD <b class="num">'+F.m1(S('TPGSM',2025,'gastos_financieros')/1000)+
+     '</b> millones, el resultado neto sigue siendo negativo por quinto año consecutivo. '+
+     'La deuda neta equivale a <b class="num">'+F.x(S('TPGSM',2025,'deuda_neta_ebitda'))+
+     '</b> el EBITDA y la cobertura de intereses es de <b class="num">'+F.x(S('TPGSM',2025,'cobertura_intereses'),1)+
+     '</b>. El problema no es la demanda, que crece al <b class="num">'+
+     F.pc(Math.pow(S('TPGSM',2025,'carga_tm')/S('TPGSM',2021,'carga_tm'),.25)-1)+'</b> anual, sino la estructura de financiamiento y el costo unitario.')+
+   fc('wn','Disciplina de costos','El costo por tonelada subió en los siete terminales',
+     'Entre 2021 y 2025 el costo unitario creció por encima del ingreso unitario en varios casos. '+
+     'Paracas pasó de USD <b class="num">'+F.m2(S('TPGSM',2021,'costo_por_tm'))+'</b> a USD <b class="num">'+
+     F.m2(S('TPGSM',2025,'costo_por_tm'))+'</b> por tonelada (+52 %) y TISUR de USD <b class="num">'+
+     F.m2(S('TISUR',2021,'costo_por_tm'))+'</b> a USD <b class="num">'+F.m2(S('TISUR',2025,'costo_por_tm'))+
+     '</b> (+40 %). Es la palanca de margen más directa y la única que no depende del regulador.')+
+   fc('wn','Capital de trabajo','Ciclo de cobro muy desigual',
+     'Transportadora Callao cierra 2025 con <b class="num">'+F.m0(S('TCSA',2025,'dias_cobro'))+
+     '</b> días de cobro, frente a <b class="num">'+F.m0(S('APMT',2025,'dias_cobro'))+
+     '</b> de APM Terminals. Tres terminales operan con capital de trabajo negativo: TISUR (USD <b class="num">'+
+     F.m0(S('TISUR',2025,'capital_trabajo'))+'</b> mil), DP World y Salaverry. Es financiamiento barato mientras el flujo sea estable, y una exposición directa si el tráfico se interrumpe.')+
+   fc('nt','Inversión','La brecha de capex marca el perfil de riesgo del próximo quinquenio',
+     'APM Terminals ha ejecutado solo el <b class="num">'+F.m1(D.p.APMT.meta.avance_inv)+
+     ' %</b> de un compromiso de USD <b class="num">'+F.m0(D.p.APMT.meta.compromiso_inv)+
+     '</b> millones: quedan más de USD 865 millones por invertir. TISUR va en <b class="num">'+
+     F.m1(D.p.TISUR.meta.avance_inv)+' %</b> y no ejecutó inversión alguna en 2025. '+
+     'En el extremo opuesto, DP World (<b class="num">'+F.m1(D.p.DPW.meta.avance_inv)+
+     ' %</b>) y Transportadora Callao (<b class="num">'+F.m1(D.p.TCSA.meta.avance_inv)+
+     ' %</b>) ya están en fase de cosecha, lo que explica su política de dividendos.');
+  m.appendChild(anio===2025?f:notaCierre());
+}
+function fc(cl,tag,h,p){
+  return '<div class="fcard '+cl+'"><h3><span class="tag">'+tag+'</span></h3><h3 style="margin-top:-4px">'+h+'</h3><p>'+p+'</p></div>';
+}
+/* Línea vertical de referencia para los gráficos de barras horizontales: el umbral se dibuja,
+   no se pinta sobre las barras, de modo que el color siga identificando al terminal. */
+function umbral(x0,etq){return {id:'u'+x0,afterDatasetsDraw(ch){
+  const x=ch.scales.x.getPixelForValue(x0),a=ch.chartArea,cx=ch.ctx;
+  cx.save();cx.strokeStyle=tk('--ink-3');cx.lineWidth=1.5;cx.setLineDash([4,3]);
+  cx.beginPath();cx.moveTo(x,a.top);cx.lineTo(x,a.bottom);cx.stroke();
+  cx.setLineDash([]);cx.fillStyle=tk('--ink-3');cx.font='600 10px "IBM Plex Sans"';
+  cx.textAlign='left';cx.fillText(etq,x+5,a.bottom-5);cx.restore();}};}
+
+function barh(box,O,val,fmt,color,suf,extra){
+  const vals=O.map(val);
+  const dl={id:'d'+Math.random(),afterDatasetsDraw(ch){
+    const cx=ch.ctx;cx.save();cx.font='600 11px "IBM Plex Mono"';cx.fillStyle=tk('--ink');
+    cx.textAlign='left';cx.textBaseline='middle';
+    ch.getDatasetMeta(0).data.forEach((p,i)=>cx.fillText(fmt(vals[i]),p.x+7,p.y));cx.restore();}};
+  mk(cvs(box),{type:'bar',plugins:extra?[dl,extra]:[dl],data:{labels:O.map(nc),
+      datasets:[{data:vals,backgroundColor:vals.map((v,i)=>color(v,O[i])),borderRadius:4,
+        barPercentage:.68,categoryPercentage:.82}]},
+    options:{...base(),indexAxis:'y',layout:{padding:{right:62,top:4}},
+      plugins:{...base().plugins,legend:{display:false},
+        tooltip:{...base().plugins.tooltip,callbacks:{title:c=>c[0].label,label:c=>fmt(c.parsed.x)}}},
+      scales:{x:{...base().scales.y,grid:{color:tk('--rule-2')},
+          ticks:{...base().scales.y.ticks,callback:v=>F.m0(v)+suf}},
+        y:{...base().scales.x,ticks:{...base().scales.x.ticks,font:{family:'IBM Plex Sans',size:11.5}}}}}});
+}
+
+/* ====== 5. CEO ====== */
+function drawCEO(m){
+  const O=D.orden;
+  m.appendChild(el('p','sub','Conversión de volumen en valor y posición frente a los entrantes.'));
+
+  const g=el('div','grid2');
+  const a=card('Crecimiento de la carga frente a crecimiento del ingreso, 2021 – 2025',
+    'Tasa anual compuesta. Cuando el ingreso crece más rápido que el tonelaje, el terminal está ganando valor por unidad: mejor mezcla de carga o mejor tarifa.',340);
+  const b=card('Toneladas por recalada, '+anio,
+    'Productividad de la ventana de atraque: mide cuánta carga rinde cada escala, que es el activo escaso de un puerto.',340);
+  g.append(a,b);m.appendChild(g);
+
+    mk(cvs(a._box),{type:'bar',data:{labels:O.map(nc),datasets:[
+      {label:'CAGR de la carga',data:O.map(k=>(Math.pow(S(k,anio,'carga_tm')/S(k,2021,'carga_tm'),EXPO())-1)*100),
+       backgroundColor:tk('--ocre'),borderRadius:4,barPercentage:.84,categoryPercentage:.5},
+      {label:'CAGR del ingreso por servicios',
+       data:O.map(k=>(Math.pow(S(k,anio,'ingresos_servicios')/S(k,2021,'ingresos_servicios'),EXPO())-1)*100),
+       backgroundColor:tk('--sonda'),borderRadius:4,barPercentage:.84,categoryPercentage:.5}]},
+    options:{...base(),
+      plugins:{...base().plugins,tooltip:{...base().plugins.tooltip,
+        callbacks:{label:c=>c.dataset.label+': '+F.m1(c.parsed.y)+' % anual'}}},
+      scales:{...base().scales,
+        x:{...base().scales.x,ticks:{...base().scales.x.ticks,maxRotation:0,autoSkip:false,font:{family:'IBM Plex Sans',size:11}}},
+        y:{...base().scales.y,ticks:{...base().scales.y.ticks,callback:v=>v+' %'}}}}});
+
+  const o3=[...O].sort((x,y)=>S(y,anio,'tm_por_nave')-S(x,anio,'tm_por_nave'));
+  barh(b._box,o3,k=>S(k,anio,'tm_por_nave'),v=>F.m0(v)+' TM',
+    (v,k)=>TC(k),' TM');
+
+  m.appendChild(el('h3',null,'Tablero competitivo '+anio));
+  m.appendChild(el('p','sub','Escala, densidad de valor y margen de cada concesión, ordenado por participación en los ingresos del sector.'));
+  const tot=O.reduce((a,k)=>a+S(k,anio,'ingresos_totales'),0);
+  const totm=O.reduce((a,k)=>a+S(k,anio,'carga_tm'),0);
+  const w=el('div','tscroll'),t=el('table');
+  t.innerHTML='<thead><tr><th>Terminal</th><th>Tipo de carga</th><th>Cuota de ingresos</th><th>Cuota de carga</th>'+
+    '<th>USD por TM</th><th>EBITDA por TM</th><th>CAGR carga</th><th>CAGR ingreso</th><th>Avance capex</th></tr></thead>';
+  const tb=el('tbody');
+  [...O].sort((x,y)=>S(y,anio,'ingresos_totales')-S(x,anio,'ingresos_totales')).forEach(k=>{
+    const cc=(Math.pow(S(k,anio,'carga_tm')/S(k,2021,'carga_tm'),EXPO())-1)*100;
+    const ci=(Math.pow(S(k,anio,'ingresos_servicios')/S(k,2021,'ingresos_servicios'),EXPO())-1)*100;
+    tb.innerHTML+='<tr><td>'+D.p[k].meta.nombre+'</td><td style="text-align:left;font-family:var(--f-ui)">'+
+      D.p[k].meta.tipo+'</td>'+
+      '<td>'+F.pc(S(k,anio,'ingresos_totales')/tot)+'</td><td>'+F.pc(S(k,anio,'carga_tm')/totm)+'</td>'+
+      '<td>'+F.m2(S(k,anio,'ingreso_por_tm'))+'</td><td>'+F.m2(S(k,anio,'ebitda_por_tm'))+'</td>'+
+      '<td class="'+(cc<0?'neg':'')+'">'+F.m1(cc)+' %</td><td class="'+(ci<0?'neg':'')+'">'+F.m1(ci)+' %</td>'+
+      '<td>'+F.m1(D.p[k].meta.avance_inv)+' %</td></tr>';
+  });
+  t.appendChild(tb);w.appendChild(t);m.appendChild(w);
+
+  m.appendChild(el('h3',null,'Diagnóstico estratégico'));
+  m.appendChild(el('p','sub',' '));
+  const f=el('div','find');
+  const ccall=(S('APMT',2025,'ingresos_totales')+S('DPW',2025,'ingresos_totales')+S('TCSA',2025,'ingresos_totales'))/tot;
+  f.innerHTML=
+   fc('nt','Concentración','Callao define el sistema',
+     'Los tres terminales del Callao concentran el <b class="num">'+F.pc(ccall)+
+     '</b> de los ingresos del sistema concesionado y el <b class="num">'+
+     F.pc((S('APMT',2025,'carga_tm')+S('DPW',2025,'carga_tm')+S('TCSA',2025,'carga_tm'))/totm)+
+     '</b> de la carga. Cualquier lectura de mercado regional que ignore esa concentración sobreestima la posición de los terminales de provincia.')+
+   fc('wn','Volumen sin margen','Paracas gana mercado pero no lo convierte en valor',
+     'Es el terminal de mayor crecimiento del sistema: la carga avanzó al <b class="num">'+
+     F.pc(Math.pow(S('TPGSM',2025,'carga_tm')/S('TPGSM',2021,'carga_tm'),.25)-1)+
+     '</b> anual y el ingreso por servicios al <b class="num">'+
+     F.pc(Math.pow(S('TPGSM',2025,'ingresos_servicios')/S('TPGSM',2021,'ingresos_servicios'),.25)-1)+
+     '</b>. Sin embargo, su EBITDA por tonelada, USD <b class="num">'+F.m2(S('TPGSM',2025,'ebitda_por_tm'))+
+     '</b>, es el más bajo del sistema, menos de la mitad del de TISUR (USD <b class="num">'+
+     F.m2(S('TISUR',2025,'ebitda_por_tm'))+'</b>). El crecimiento está entrando por carga de baja densidad de valor y con el costo unitario más alto del sector.')+
+   fc('ok','Densidad de valor','Paita convierte menos tonelaje en más margen',
+     'Con apenas el <b class="num">'+F.pc(S('TPP',2025,'carga_tm')/totm)+
+     '</b> de la carga del sistema captura el <b class="num">'+F.pc(S('TPP',2025,'ingresos_totales')/tot)+
+     '</b> de los ingresos. Su EBITDA por tonelada, USD <b class="num">'+F.m2(S('TPP',2025,'ebitda_por_tm'))+
+     '</b>, es el más alto del sistema: carga contenedorizada perecible de exportación, que paga tarifa de servicio completo. Es el referente de mezcla a imitar.')+
+   fc('nt','Madurez de activos','Dos concesiones entran en su fase final',
+     'Transportadora Callao opera una concesión de <b class="num">20</b> años iniciada en 2014 y con el <b class="num">100 %</b> '+
+     'de la inversión ejecutada: su intangible se amortiza hacia cero (USD <b class="num">'+
+     F.m0(S('TCSA',2025,'intangibles')/1000)+'</b> millones al cierre de 2025) y el valor terminal de la concesión se vuelve la cuestión central. '+
+     'DP World, con <b class="num">'+F.m1(D.p.DPW.meta.avance_inv)+' %</b> de avance, ya pasó de construir a repartir.')+
+   fc('cr','Riesgo competitivo','El eje Callao enfrenta una reconfiguración de rutas',
+     'APM Terminals movilizó <b class="num">'+F.m1(S('APMT',2025,'carga_tm')/1e6)+
+     '</b> millones de toneladas en 2025 frente a <b class="num">'+F.m1(S('APMT',2021,'carga_tm')/1e6)+
+     '</b> en 2021: una tasa anual de apenas <b class="num">0,4 %</b>. Su ingreso creció al <b class="num">'+
+     F.pc(Math.pow(S('APMT',2025,'ingresos_servicios')/S('APMT',2021,'ingresos_servicios'),.25)-1)+
+     '</b> anual, de modo que la facturación avanza por tarifa y mezcla, no por volumen. Con más de USD 865 millones de capex pendiente, el retorno de esa inversión depende de un crecimiento de carga que hoy no se observa.')+
+   fc('cr','Entrante','Chancay ya reordena el mapa de contenedores',
+     'El puerto de Chancay movilizó más de <b class="num">270 000</b> TEU en sus primeros doce meses de operación, con '+
+     '<b class="num">289</b> naves atendidas y una inversión de USD <b class="num">1 300</b> millones en su primera fase, '+
+     'a la que seguiría una segunda de unos USD <b class="num">2 500</b> millones. En el primer trimestre de 2026 ya superó a Paita '+
+     'como tercer puerto del país en contenedores. No es una concesión bajo el ámbito del Ositrán, de modo que no aparece en este tablero, '+
+     'pero compite de forma directa por el transbordo del Callao y por la carga del norte. '+
+     'Para el sistema concesionado implica que la tarifa, y no solo el volumen, pasa a ser terreno disputado.')+
+   fc('ok','Palanca operativa','La productividad de la ventana de atraque separa a los líderes',
+     'DP World rinde <b class="num">'+F.m0(S('DPW',2025,'tm_por_nave'))+
+     '</b> toneladas por recalada y Salaverry <b class="num">'+F.m0(S('STI',2025,'tm_por_nave'))+
+     '</b>, frente a <b class="num">'+F.m0(S('TPGSM',2025,'tm_por_nave'))+'</b> de Paracas y <b class="num">'+
+     F.m0(S('TPP',2025,'tm_por_nave'))+'</b> de Paita. Dado que el amarradero es el activo escaso, elevar el rendimiento por escala es la vía de crecimiento que no exige capex de infraestructura.');
+  m.appendChild(anio===2025?f:notaCierre());
+}
+
+/* ====== 6. OPERATIVA ====== */
+function drawOper(m){
+  const O=D.orden, Y=D.anios;
+  const T=(f,y=2025)=>O.reduce((a,k)=>a+(S(k,y,f)||0),0);
+  const cagr=(k,f)=>anio<=2021?null:Math.pow(S(k,anio,f)/S(k,2021,f),EXPO())-1;
+  m.appendChild(el('div','sub','Volumen movilizado, mezcla de carga y productividad del amarradero. '+
+    'Es la capa física del negocio: toneladas, contenedores y recaladas, antes de que la tarifa las convierta en ingreso.'));
+
+  m.appendChild(tiles([
+    ['Carga movilizada', F.m1(T('carga_tm')/1e6), 'millones de TM · '+
+      F.pc(Math.pow(T('carga_tm')/T('carga_tm',2021),EXPO())-1)+' anual desde 2021'],
+    ['Contenedores', F.m2(T('teu')/1e6), 'millones de TEU'],
+    ['Contenedores', F.m0(T('contenedores')/1000), 'miles de unidades físicas'],
+    ['Naves atendidas', F.m0(T('naves')), 'recaladas en '+anio],
+    ['Carga por recalada', F.m0(T('carga_tm')/T('naves')), 'toneladas, promedio del sistema'],
+    ['Carga contenedorizada', F.pc(O.reduce((a,k)=>a+D.p[k].meta.pct_contenedorizada*S(k,anio,'carga_tm'),0)/T('carga_tm')),
+      'del tonelaje total'],
+    ['Terminal mayor', nc(O.reduce((a,k)=>S(k,anio,'carga_tm')>S(a,anio,'carga_tm')?k:a)),
+      F.pc(Math.max(...O.map(k=>S(k,anio,'carga_tm')))/T('carga_tm'))+' de la carga'],
+    ['Mayor crecimiento', nc(O.reduce((a,k)=>cagr(k,'carga_tm')>cagr(a,'carga_tm')?k:a)),
+      F.pc(Math.max(...O.map(k=>cagr(k,'carga_tm'))))+' anual en carga']
+  ]));
+
+  /* --- evolución del volumen --- */
+  const g=el('div','grid2');
+  const a=card('Carga movilizada por terminal, 2021 – 2025',
+    'Millones de toneladas. Cada terminal conserva su color en toda la carta.',340);
+  const b=card('Contenedores movilizados, 2021 – 2025',
+    'Miles de TEU. Solo aparecen los terminales que operan carga contenedorizada.',340);
+  g.append(a,b);m.appendChild(g);
+
+  const lineas=(box,ks,f,esc,suf,dec)=>mk(cvs(box),{type:'line',
+    data:{labels:Y,datasets:ks.map(k=>({label:nc(k),data:Y.map(y=>S(k,y,f)/esc),
+      borderColor:TC(k),backgroundColor:TC(k),borderWidth:2,
+      pointRadius:3,pointHoverRadius:7,pointBorderColor:tk('--card'),pointBorderWidth:1.5,tension:.25}))},
+    options:{...base(),
+      plugins:{...base().plugins,tooltip:{...base().plugins.tooltip,
+        callbacks:{label:c=>c.dataset.label+': '+(dec?F.m1(c.parsed.y):F.m0(c.parsed.y))+suf}}},
+      scales:{...base().scales,y:{...base().scales.y,
+        ticks:{...base().scales.y.ticks,callback:v=>dec?F.m1(v):F.m0(v)}}}}});
+
+  lineas(a._box,O,'carga_tm',1e6,' millones de TM',true);
+  lineas(b._box,O.filter(k=>S(k,anio,'teu')>0),'teu',1000,' mil TEU',false);
+
+  const g2=el('div','grid2');
+  const c=card('Naves atendidas por terminal, '+anio,
+    'Número de recaladas en el año. Es la demanda de ventana de atraque que soporta cada concesión.',340);
+  const d=card('Toneladas por recalada, '+anio,
+    'Productividad de la ventana de atraque: cuánta carga rinde cada escala. El amarradero es el activo escaso de un puerto, '+
+    'de modo que subir este número es crecer sin capex de infraestructura.',340);
+  g2.append(c,d);m.appendChild(g2);
+
+  barh(c._box,[...O].sort((x,y)=>S(y,anio,'naves')-S(x,anio,'naves')),
+    k=>S(k,anio,'naves'),v=>F.m0(v)+' naves',(v,k)=>TC(k),'');
+  barh(d._box,[...O].sort((x,y)=>S(y,anio,'tm_por_nave')-S(x,anio,'tm_por_nave')),
+    k=>S(k,anio,'tm_por_nave'),v=>F.m0(v)+' TM',(v,k)=>TC(k),' TM');
+
+  /* --- tablero operativo --- */
+  m.appendChild(el('h3',null,'Tablero operativo '+anio));
+  m.appendChild(el('p','sub','Volumen, mezcla y rendimiento por concesión, ordenado por tonelaje movilizado. '+
+    'Las columnas de contenedores quedan vacías donde el terminal no mueve carga contenedorizada.'));
+  const tm=T('carga_tm'),tu=T('teu'),tn=T('naves');
+  const w=el('div','tscroll'),t=el('table');
+  t.innerHTML='<thead><tr><th>Terminal</th><th>Carga (TM)</th><th>Cuota de carga</th><th>TEU</th>'+
+    '<th>Contenedores</th><th>Contenedorizada</th><th>Naves</th><th>Cuota de naves</th>'+
+    '<th>TM por recalada</th><th>CAGR carga</th><th>CAGR naves</th></tr></thead>';
+  const tb=el('tbody');
+  [...O].sort((x,y)=>S(y,anio,'carga_tm')-S(x,anio,'carga_tm')).forEach(k=>{
+    const cc=cagr(k,'carga_tm')*100, cn=cagr(k,'naves')*100, teu=S(k,anio,'teu');
+    tb.innerHTML+='<tr><td>'+D.p[k].meta.nombre+'</td>'+
+      '<td>'+F.m0(S(k,anio,'carga_tm'))+'</td><td>'+F.pc(S(k,anio,'carga_tm')/tm)+'</td>'+
+      '<td>'+(teu>0?F.m0(teu):'—')+'</td>'+
+      '<td>'+(S(k,anio,'contenedores')>0?F.m0(S(k,anio,'contenedores')):'—')+'</td>'+
+      '<td>'+F.pc(D.p[k].meta.pct_contenedorizada)+'</td>'+
+      '<td>'+F.m0(S(k,anio,'naves'))+'</td><td>'+F.pc(S(k,anio,'naves')/tn)+'</td>'+
+      '<td>'+F.m0(S(k,anio,'tm_por_nave'))+'</td>'+
+      '<td class="'+(cc<0?'neg':'')+'">'+F.m1(cc)+' %</td>'+
+      '<td class="'+(cn<0?'neg':'')+'">'+F.m1(cn)+' %</td></tr>';
+  });
+  tb.innerHTML+='<tr class="tot"><td>Sistema</td><td>'+F.m0(tm)+'</td><td>100,0 %</td>'+
+    '<td>'+F.m0(tu)+'</td><td>'+F.m0(T('contenedores'))+'</td>'+
+    '<td>'+F.pc(O.reduce((a,k)=>a+D.p[k].meta.pct_contenedorizada*S(k,anio,'carga_tm'),0)/tm)+'</td>'+
+    '<td>'+F.m0(tn)+'</td><td>100,0 %</td><td>'+F.m0(tm/tn)+'</td>'+
+    '<td>'+F.m1((Math.pow(tm/T('carga_tm',2021),EXPO())-1)*100)+' %</td>'+
+    '<td>'+F.m1((Math.pow(tn/T('naves',2021),EXPO())-1)*100)+' %</td></tr>';
+  t.appendChild(tb);w.appendChild(t);m.appendChild(w);
+
+  /* --- serie de volumen --- */
+  m.appendChild(el('h3',null,'Serie de volumen, 2021 – 2025'));
+  m.appendChild(el('p','sub','Toneladas movilizadas por año según la Declaración Estadística del Ositrán.'));
+  const w2=el('div','tscroll'),t2=el('table');
+  t2.innerHTML='<thead><tr><th>Terminal</th>'+Y.map(y=>'<th>'+y+'</th>').join('')+
+    '<th>Δ '+anio+' vs 2021</th></tr></thead>';
+  const tb2=el('tbody');
+  tb2.innerHTML+='<tr class="sec"><td>Carga movilizada, millones de TM</td>'+
+    Y.map(()=>'<td></td>').join('')+'<td></td></tr>';
+  [...O].sort((x,y)=>S(y,anio,'carga_tm')-S(x,anio,'carga_tm')).forEach(k=>{
+    const v=S(k,anio,'carga_tm')/S(k,2021,'carga_tm')-1;
+    tb2.innerHTML+='<tr><td>'+D.p[k].meta.nombre+'</td>'+
+      Y.map(y=>'<td>'+F.m2(S(k,y,'carga_tm')/1e6)+'</td>').join('')+
+      '<td class="'+(v<0?'neg':'')+'">'+F.pc(v)+'</td></tr>';
+  });
+  tb2.innerHTML+='<tr class="sec"><td>Naves atendidas</td>'+Y.map(()=>'<td></td>').join('')+'<td></td></tr>';
+  [...O].sort((x,y)=>S(y,anio,'naves')-S(x,anio,'naves')).forEach(k=>{
+    const v=S(k,anio,'naves')/S(k,2021,'naves')-1;
+    tb2.innerHTML+='<tr><td>'+D.p[k].meta.nombre+'</td>'+
+      Y.map(y=>'<td>'+F.m0(S(k,y,'naves'))+'</td>').join('')+
+      '<td class="'+(v<0?'neg':'')+'">'+F.pc(v)+'</td></tr>';
+  });
+  tb2.innerHTML+='<tr class="sec"><td>Contenedores, miles de TEU</td>'+Y.map(()=>'<td></td>').join('')+'<td></td></tr>';
+  O.filter(k=>S(k,anio,'teu')>0).sort((x,y)=>S(y,anio,'teu')-S(x,anio,'teu')).forEach(k=>{
+    /* Una base de 2021 prácticamente nula no admite variación porcentual con sentido. */
+    const b0=S(k,2021,'teu'), v=S(k,anio,'teu')/b0-1;
+    const cel=(b0<S(k,anio,'teu')*0.02)?'<td>sin base</td>'
+      :'<td class="'+(v<0?'neg':'')+'">'+F.pc(v)+'</td>';
+    tb2.innerHTML+='<tr><td>'+D.p[k].meta.nombre+'</td>'+
+      Y.map(y=>'<td>'+F.m1(S(k,y,'teu')/1000)+'</td>').join('')+cel+'</tr>';
+  });
+  m.appendChild(w2);
+  m.appendChild(el('p','sub','«Sin base» indica que el terminal no movía contenedores en 2021, '+
+    'de modo que la variación porcentual no tiene lectura: Salaverry empezó a moverlos en 2024.'));
+  t2.appendChild(tb2);w2.appendChild(t2);m.appendChild(w2);
+
+  /* --- diagnóstico --- */
+  m.appendChild(el('h3',null,'Diagnóstico operativo'));
+  m.appendChild(el('p','sub',' '));
+  const f=el('div','find');
+  const topTM=[...O].sort((x,y)=>S(y,2025,'carga_tm')-S(x,2025,'carga_tm'));
+  const topNav=[...O].sort((x,y)=>S(y,2025,'tm_por_nave')-S(x,2025,'tm_por_nave'));
+  f.innerHTML=
+   fc('nt','Escala física','El sistema movió '+F.m1(tm/1e6)+' millones de toneladas en '+F.m0(tn)+' recaladas',
+     'DP World y APM Terminals concentran el <b class="num">'+
+     F.pc((S('DPW',2025,'carga_tm')+S('APMT',2025,'carga_tm'))/tm)+
+     '</b> del tonelaje con el <b class="num">'+F.pc((S('DPW',2025,'naves')+S('APMT',2025,'naves'))/tn)+
+     '</b> de las recaladas, de modo que absorben más carga por escala que el resto del sistema. '+
+     'Matarani es el tercer terminal por tonelaje (<b class="num">'+F.m1(S('TISUR',2025,'carga_tm')/1e6)+
+     '</b> millones de TM) pese a mover apenas <b class="num">'+F.pc(S('TISUR',2025,'teu')/tu)+
+     '</b> de los TEU: su carga es granel mineral, no contenedor.')+
+   fc('ok','Productividad del amarradero','Casi cinco veces de diferencia entre el primero y el último',
+     nc(topNav[0])+' rinde <b class="num">'+F.m0(S(topNav[0],2025,'tm_por_nave'))+
+     '</b> toneladas por recalada y '+nc(topNav[topNav.length-1])+' <b class="num">'+
+     F.m0(S(topNav[topNav.length-1],2025,'tm_por_nave'))+'</b>. Parte de la brecha es estructural '+
+     '—un granelero descarga más por escala que un portacontenedores de cabotaje— pero no toda: '+
+     'dentro del grupo de graneles la diferencia entre Salaverry (<b class="num">'+
+     F.m0(S('STI',2025,'tm_por_nave'))+'</b>) y Paracas (<b class="num">'+F.m0(S('TPGSM',2025,'tm_por_nave'))+
+     '</b>) es de gestión de la ventana, no de tipo de buque.')+
+   fc('wn','Crecimiento desigual','El volumen del sistema crece, pero concentrado en pocos terminales',
+     'Paracas creció al <b class="num">'+F.pc(cagr('TPGSM','carga_tm'))+
+     '</b> anual en carga y Salaverry al <b class="num">'+F.pc(cagr('STI','carga_tm'))+
+     '</b>, mientras APM Terminals avanzó apenas <b class="num">'+F.pc(cagr('APMT','carga_tm'))+
+     '</b> anual, de <b class="num">'+F.m1(S('APMT',2021,'carga_tm')/1e6)+'</b> a <b class="num">'+
+     F.m1(S('APMT',2025,'carga_tm')/1e6)+'</b> millones de toneladas. '+
+     'En el mayor terminal del país el volumen está prácticamente plano: lo que crece es la tarifa y la mezcla.')+
+   fc('nt','Mezcla de carga','La tonelada no es la unidad de trabajo de todos',
+     'Solo DP World mueve carga <b class="num">100 %</b> contenedorizada. Paita llega al <b class="num">'+
+     F.pc(D.p.TPP.meta.pct_contenedorizada)+'</b> y APM Terminals al <b class="num">'+
+     F.pc(D.p.APMT.meta.pct_contenedorizada)+'</b>, mientras Matarani, Salaverry y Transportadora Callao '+
+     'están por debajo del <b class="num">2 %</b>. Comparar costo por tonelada entre un terminal de contenedores '+
+     'y uno de granel mineral no mide eficiencia, mide tipo de carga. La sección de economía unitaria separa los grupos.')+
+   fc('ok','Contenedores','El Callao concentra el '+F.pc((S('DPW',2025,'teu')+S('APMT',2025,'teu'))/tu,0)+' de los TEU del sistema',
+     'DP World movilizó <b class="num">'+F.m0(S('DPW',2025,'teu'))+'</b> TEU y APM Terminals <b class="num">'+
+     F.m0(S('APMT',2025,'teu'))+'</b>, frente a <b class="num">'+F.m0(S('TPP',2025,'teu'))+
+     '</b> de Paita, el tercero. El crecimiento de TEU de DP World desde 2021 es de <b class="num">'+
+     F.pc(S('DPW',2025,'teu')/S('DPW',2021,'teu')-1)+'</b>, frente a <b class="num">'+
+     F.pc(S('DPW',2025,'carga_tm')/S('DPW',2021,'carga_tm')-1)+'</b> de su tonelaje: '+
+     'gana movimientos de transbordo, que generan caja sin ocupar patio de importación.')+
+   fc('cr','Riesgo de volumen','Chancay compite por la carga que sostiene estas cifras',
+     'El puerto de Chancay superó los <b class="num">270 000</b> TEU en sus primeros doce meses y ya desplazó a Paita '+
+     'del tercer lugar nacional en contenedores. No está bajo el ámbito del Ositrán y por eso no aparece en este tablero, '+
+     'pero disputa directamente el transbordo del Callao. El tonelaje de '+nc(topTM[0])+' y '+nc(topTM[1])+
+     ' es la variable más expuesta del sistema, y también la que sostiene su capex comprometido.');
+  m.appendChild(anio===2025?f:notaCierre());
+}
+
+/* ---------- arranque y navegación ---------- */
+const nav=document.getElementById('nav'),main=document.getElementById('main');
+SEC.forEach(([id,label])=>{
+  const b=el('button',null,label);b.setAttribute('role','tab');b.dataset.id=id;
+  b.onclick=()=>{actual=id;try{history.replaceState(null,'','#'+id)}catch(e){}draw()};
+  nav.appendChild(b);
+});
+function draw(){
+  kill();main.innerHTML='';
+  const s=SEC.find(x=>x[0]===actual)||SEC[0];
+  nav.querySelectorAll('button').forEach(b=>b.setAttribute('aria-selected',b.dataset.id===actual));
+  const sec=el('section');
+  const h=el('div','shead');h.appendChild(el('h2',null,s[1]));
+  const sel=el('div','anios');
+  sel.appendChild(el('span','eyebrow','Ejercicio'));
+  D.anios.forEach(y=>{
+    const bt=el('button',null,String(y));
+    bt.setAttribute('aria-pressed',y===anio);
+    bt.onclick=()=>{anio=y;draw()};
+    sel.appendChild(bt);
+  });
+  sel.appendChild(el('span','eyebrow','miles de USD'));
+  h.appendChild(sel);
+  sec.appendChild(h);main.appendChild(sec);
+  s[2](sec);
+}
+const hash=(location.hash||'').replace('#','');
+if(SEC.some(s=>s[0]===hash))actual=hash;
+draw();
+</script>
